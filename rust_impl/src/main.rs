@@ -55,10 +55,23 @@ pub fn Xor(a: Bit, b: Bit) -> Bit {
     )
 }
 
+pub fn Mux(a: Bit, b: Bit, sel: Bit) -> Bit {
+    Or(
+        And(
+            a,
+            Not(sel)
+        ),
+        And(
+            b,
+            sel
+        )
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::Bit::{O, S};
-    use super::{Nand, Not, And, Or, Xor};
+    use super::{Nand, Not, And, Or, Xor, Mux};
     #[test]
     fn for_nand() {
         assert_eq!(Nand(O, O), S);
@@ -96,5 +109,17 @@ mod tests {
         assert_eq!(Xor(O, S), S);
         assert_eq!(Xor(S, O), S);
         assert_eq!(Xor(S, S), O);
+    }
+
+    #[test]
+    fn for_mux() {
+        assert_eq!(Mux(O, O, O), O);
+        assert_eq!(Mux(O, S, O), O);
+        assert_eq!(Mux(S, O, O), S);
+        assert_eq!(Mux(S, S, O), S);
+        assert_eq!(Mux(O, O, S), O);
+        assert_eq!(Mux(O, S, S), S);
+        assert_eq!(Mux(S, O, S), O);
+        assert_eq!(Mux(S, S, S), S);
     }
 }

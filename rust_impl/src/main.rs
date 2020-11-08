@@ -42,10 +42,23 @@ pub fn Or(a: Bit, b: Bit) -> Bit {
     )
 }
 
+pub fn Xor(a: Bit, b: Bit) -> Bit {
+    Or(
+        And(
+            a,
+            Not(b)
+        ),
+        And(
+            Not(a),
+            b
+        )
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::Bit::{O, S};
-    use super::{Nand, Not, And, Or};
+    use super::{Nand, Not, And, Or, Xor};
     #[test]
     fn for_nand() {
         assert_eq!(Nand(O, O), S);
@@ -75,5 +88,13 @@ mod tests {
         assert_eq!(Or(O, S), S);
         assert_eq!(Or(S, O), S);
         assert_eq!(Or(S, S), S);
+    }
+
+    #[test]
+    fn for_xor() {
+        assert_eq!(Xor(O, O), O);
+        assert_eq!(Xor(O, S), S);
+        assert_eq!(Xor(S, O), S);
+        assert_eq!(Xor(S, S), O);
     }
 }

@@ -68,10 +68,23 @@ pub fn Mux(a: Bit, b: Bit, sel: Bit) -> Bit {
     )
 }
 
+pub fn DMux(a: Bit, sel: Bit) -> (Bit, Bit) {
+    (
+        And(
+            a,
+            Not(sel)
+        ),
+        And(
+            a,
+            sel
+        )
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::Bit::{O, S};
-    use super::{Nand, Not, And, Or, Xor, Mux};
+    use super::{Nand, Not, And, Or, Xor, Mux, DMux};
     #[test]
     fn for_nand() {
         assert_eq!(Nand(O, O), S);
@@ -121,5 +134,13 @@ mod tests {
         assert_eq!(Mux(O, S, S), S);
         assert_eq!(Mux(S, O, S), O);
         assert_eq!(Mux(S, S, S), S);
+    }
+
+    #[test]
+    fn for_dmux() {
+        assert_eq!(DMux(O, O), (O, O));
+        assert_eq!(DMux(O, S), (O, O));
+        assert_eq!(DMux(S, O), (S, O));
+        assert_eq!(DMux(S, S), (O, S));
     }
 }

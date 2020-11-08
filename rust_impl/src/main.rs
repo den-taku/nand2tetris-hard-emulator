@@ -1,25 +1,25 @@
 #![allow(dead_code, non_snake_case)]
 
-use crate::Bit::{O, S};
+use crate::Bit::{O, I};
 
 fn main(){}
 
-// O -> 0, S -> 1
+// O -> 0, I -> 1
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Bit{
     O,
-    S
+    I
 }
 
 pub fn Nand(a: Bit, b: Bit) -> Bit {
     match a {
         O => match b {
-            O => S,
-            S => S
+            O => I,
+            I => I
         },
-        S => match b {
-            O => S,
-            S => O
+        I => match b {
+            O => I,
+            I => O
         }
     }
 }
@@ -83,64 +83,64 @@ pub fn DMux(a: Bit, sel: Bit) -> (Bit, Bit) {
 
 #[cfg(test)]
 mod tests {
-    use super::Bit::{O, S};
+    use super::Bit::{O, I};
     use super::{Nand, Not, And, Or, Xor, Mux, DMux};
     #[test]
     fn for_nand() {
-        assert_eq!(Nand(O, O), S);
-        assert_eq!(Nand(O, S), S);
-        assert_eq!(Nand(S, O), S);
-        assert_eq!(Nand(S, S), O);
+        assert_eq!(Nand(O, O), I);
+        assert_eq!(Nand(O, I), I);
+        assert_eq!(Nand(I, O), I);
+        assert_eq!(Nand(I, I), O);
 
     }
 
     #[test]
     fn for_not() {
-        assert_eq!(Not(O), S);
-        assert_eq!(Not(S), O);
+        assert_eq!(Not(O), I);
+        assert_eq!(Not(I), O);
     }
 
     #[test]
     fn for_and() {
         assert_eq!(And(O, O), O);
-        assert_eq!(And(O, S), O);
-        assert_eq!(And(S, O), O);
-        assert_eq!(And(S, S), S);
+        assert_eq!(And(O, I), O);
+        assert_eq!(And(I, O), O);
+        assert_eq!(And(I, I), I);
     }
 
     #[test]
     fn for_or() {
         assert_eq!(Or(O, O), O);
-        assert_eq!(Or(O, S), S);
-        assert_eq!(Or(S, O), S);
-        assert_eq!(Or(S, S), S);
+        assert_eq!(Or(O, I), I);
+        assert_eq!(Or(I, O), I);
+        assert_eq!(Or(I, I), I);
     }
 
     #[test]
     fn for_xor() {
         assert_eq!(Xor(O, O), O);
-        assert_eq!(Xor(O, S), S);
-        assert_eq!(Xor(S, O), S);
-        assert_eq!(Xor(S, S), O);
+        assert_eq!(Xor(O, I), I);
+        assert_eq!(Xor(I, O), I);
+        assert_eq!(Xor(I, I), O);
     }
 
     #[test]
     fn for_mux() {
         assert_eq!(Mux(O, O, O), O);
-        assert_eq!(Mux(O, S, O), O);
-        assert_eq!(Mux(S, O, O), S);
-        assert_eq!(Mux(S, S, O), S);
-        assert_eq!(Mux(O, O, S), O);
-        assert_eq!(Mux(O, S, S), S);
-        assert_eq!(Mux(S, O, S), O);
-        assert_eq!(Mux(S, S, S), S);
+        assert_eq!(Mux(O, I, O), O);
+        assert_eq!(Mux(I, O, O), I);
+        assert_eq!(Mux(I, I, O), I);
+        assert_eq!(Mux(O, O, I), O);
+        assert_eq!(Mux(O, I, I), I);
+        assert_eq!(Mux(I, O, I), O);
+        assert_eq!(Mux(I, I, I), I);
     }
 
     #[test]
     fn for_dmux() {
         assert_eq!(DMux(O, O), (O, O));
-        assert_eq!(DMux(O, S), (O, O));
-        assert_eq!(DMux(S, O), (S, O));
-        assert_eq!(DMux(S, S), (O, S));
+        assert_eq!(DMux(O, I), (O, O));
+        assert_eq!(DMux(I, O), (I, O));
+        assert_eq!(DMux(I, I), (O, I));
     }
 }

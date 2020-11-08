@@ -11,10 +11,6 @@ pub enum Bit{
     S
 }
 
-pub fn Not(a: Bit) -> Bit {
-    Nand(a, a)
-}
-
 pub fn Nand(a: Bit, b: Bit) -> Bit {
     match a {
         O => match b {
@@ -28,10 +24,21 @@ pub fn Nand(a: Bit, b: Bit) -> Bit {
     }
 }
 
+pub fn Not(a: Bit) -> Bit {
+    Nand(a, a)
+}
+
+pub fn And(a: Bit, b: Bit) -> Bit {
+    Nand(
+        Nand(a, b),
+        Nand(a, b)
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::Bit::{O, S};
-    use super::{Nand, Not};
+    use super::{Nand, Not, And};
     #[test]
     fn for_nand() {
         assert_eq!(Nand(O, O), S);
@@ -45,5 +52,13 @@ mod tests {
     fn for_not() {
         assert_eq!(Not(O), S);
         assert_eq!(Not(S), O);
+    }
+
+    #[test]
+    fn for_and() {
+        assert_eq!(And(O, O), O);
+        assert_eq!(And(O, S), O);
+        assert_eq!(And(S, O), O);
+        assert_eq!(And(S, S), S);
     }
 }

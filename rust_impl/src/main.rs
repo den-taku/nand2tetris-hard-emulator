@@ -4,7 +4,7 @@ use crate::Bit::{O, S};
 
 fn main(){}
 
-// true -> 1, false -> 0
+// O -> 0, S -> 1
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Bit{
     O,

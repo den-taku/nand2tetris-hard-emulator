@@ -35,10 +35,17 @@ pub fn And(a: Bit, b: Bit) -> Bit {
     )
 }
 
+pub fn Or(a: Bit, b: Bit) -> Bit {
+    Nand(
+        Nand(a, a),
+        Nand(b, b)
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::Bit::{O, S};
-    use super::{Nand, Not, And};
+    use super::{Nand, Not, And, Or};
     #[test]
     fn for_nand() {
         assert_eq!(Nand(O, O), S);
@@ -60,5 +67,13 @@ mod tests {
         assert_eq!(And(O, S), O);
         assert_eq!(And(S, O), O);
         assert_eq!(And(S, S), S);
+    }
+
+    #[test]
+    fn for_or() {
+        assert_eq!(Or(O, O), O);
+        assert_eq!(Or(O, S), S);
+        assert_eq!(Or(S, O), S);
+        assert_eq!(Or(S, S), S);
     }
 }

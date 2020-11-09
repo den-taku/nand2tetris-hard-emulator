@@ -3,10 +3,12 @@
 use crate::Bit::{O, I};
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use std::ops::{Index, IndexMut};
 
 fn main(){
     println!("{}", Not(Mux(I, O, I)));
     println!("{:?}", [I, O, I, O, I, I, O]);
+    println!("{}", Word([I; 16]));
 }
 
 // O -> 0, I -> 1
@@ -23,6 +25,39 @@ impl Display for Bit {
             O => "O".to_string()
         };
         write!(dest, "{}", buf)
+    }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct Word ([Bit; 16]);
+
+impl Display for Word {
+    fn fmt(&self, dest: &mut Formatter) -> fmt::Result {
+        let mut buf = "[".to_string();
+        for i in 0..16 {
+            buf = format!("{} {},", buf, self[i]);
+        }
+        buf = format!("{} ]", buf);
+        write!(dest, "{}", buf)
+    }
+}
+
+impl Index<usize> for Word {
+    type Output = Bit;
+    fn index(&self, index: usize) -> &Self::Output {
+        if 15 < index {
+            panic!(format!("index fail: {} is out of range.", index));
+        }
+        &self[index]
+    }
+}
+
+impl IndexMut<usize> for Word {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        if 15 < index {
+            panic!(format!("index_mut fail: {} is out of range.", index));
+        }
+        &mut self[index]
     }
 }
 
@@ -241,9 +276,15 @@ pub fn Mux4Way16(a: [Bit; 16], b: [Bit; 16], c: [Bit; 16], d: [Bit; 16], sel: [B
     ]
 }
 
+pub fn Mux8Way16(a: [Bit; 16], b: [Bit; 16], c: [Bit; 16]) -> [Bit; 16] {
+    unimplemented!()
+}
+
 #[cfg(test)]
 mod tests {
+    use super::Bit;
     use super::Bit::{O, I};
+    use super::Word;
     use super::{Nand, Not, And, Or, Xor, Mux, DMux, Not16, And16, Or16, Mux16,
                 Or8Way, Mux4Way16};
     #[test]
@@ -500,5 +541,18 @@ mod tests {
             ),
             [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I] 
         );
+    }
+
+    #[test]
+    #[should_panic(expected = "index fail: 16 is out of range.")]
+    fn for_index() {
+        let _ = Word([I; 16])[16];
+    }
+
+    #[test]
+    #[should_panic(expected = "index_mut fail: 16 is out of range.")]
+    fn for_index_mut() {
+        let mut dummy = Word([I; 16]);
+        dummy[16] = O;
     }
 }

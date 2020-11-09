@@ -391,12 +391,97 @@ pub fn DMux4Way(a: Bit, sel: [Bit; 2]) -> [Bit; 4] {
     ]
 }
 
+pub fn DMux8Way(a: Bit, sel: [Bit; 3]) -> [Bit; 8] {
+    [
+        And(
+            And(
+                a,
+                Not(sel[0])
+            ),
+            And(
+                Not(sel[1]),
+                Not(sel[2])
+            )
+        ),
+        And(
+            And(
+                a,
+                Not(sel[0])
+            ),
+            And(
+                Not(sel[1]),
+                sel[2]
+            )
+        ),
+        And(
+            And(
+                a,
+                Not(sel[0])
+            ),
+            And(
+                sel[1],
+                Not(sel[2])
+            )
+        ),
+        And(
+            And(
+                a,
+                Not(sel[0])
+            ),
+            And(
+                sel[1],
+                sel[2]
+            )
+        ),
+        And(
+            And(
+                a,
+                sel[0]
+            ),
+            And(
+                Not(sel[1]),
+                Not(sel[2])
+            )
+        ),
+        And(
+            And(
+                a,
+                sel[0]
+            ),
+            And(
+                Not(sel[1]),
+                sel[2]
+            )
+        ),
+        And(
+            And(
+                a,
+                sel[0]
+            ),
+            And(
+                sel[1],
+                Not(sel[2])
+            )
+        ),
+        And(
+            And(
+                a,
+                sel[0]
+            ),
+            And(
+                sel[1],
+                sel[2]
+            )
+        ),
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     use super::Bit::{O, I};
     use super::Word;
     use super::{Nand, Not, And, Or, Xor, Mux, DMux, Not16, And16, Or16, Mux16,
-                Or8Way, Mux4Way16, Mux8Way16, DMux4Way};
+                Or8Way, Mux4Way16, Mux8Way16, DMux4Way, DMux8Way};
     #[test]
     fn for_nand() {
         assert_eq!(Nand(O, O), I);
@@ -792,5 +877,25 @@ mod tests {
         assert_eq!(DMux4Way(I, [O, I]), [O, I, O, O]);
         assert_eq!(DMux4Way(I, [I, O]), [O, O, I, O]);
         assert_eq!(DMux4Way(I, [I, I]), [O, O, O, I]);
+    }
+
+    #[test]
+    fn for_dmux8way() {
+        assert_eq!(DMux8Way(O, [O, O, O]), [O, O, O, O, O, O, O, O]);
+        assert_eq!(DMux8Way(O, [O, O, I]), [O, O, O, O, O, O, O, O]);
+        assert_eq!(DMux8Way(O, [O, I, O]), [O, O, O, O, O, O, O, O]);
+        assert_eq!(DMux8Way(O, [O, I, I]), [O, O, O, O, O, O, O, O]);
+        assert_eq!(DMux8Way(O, [I, O, O]), [O, O, O, O, O, O, O, O]);
+        assert_eq!(DMux8Way(O, [I, O, I]), [O, O, O, O, O, O, O, O]);
+        assert_eq!(DMux8Way(O, [I, I, O]), [O, O, O, O, O, O, O, O]);
+        assert_eq!(DMux8Way(O, [I, I, I]), [O, O, O, O, O, O, O, O]);
+        assert_eq!(DMux8Way(I, [O, O, O]), [I, O, O, O, O, O, O, O]);
+        assert_eq!(DMux8Way(I, [O, O, I]), [O, I, O, O, O, O, O, O]);
+        assert_eq!(DMux8Way(I, [O, I, O]), [O, O, I, O, O, O, O, O]);
+        assert_eq!(DMux8Way(I, [O, I, I]), [O, O, O, I, O, O, O, O]);
+        assert_eq!(DMux8Way(I, [I, O, O]), [O, O, O, O, I, O, O, O]);
+        assert_eq!(DMux8Way(I, [I, O, I]), [O, O, O, O, O, I, O, O]);
+        assert_eq!(DMux8Way(I, [I, I, O]), [O, O, O, O, O, O, I, O]);
+        assert_eq!(DMux8Way(I, [I, I, I]), [O, O, O, O, O, O, O, I]);
     }
 }

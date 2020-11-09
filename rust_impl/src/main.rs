@@ -2,7 +2,9 @@
 
 use crate::Bit::{O, I};
 
-fn main(){}
+fn main(){
+    println!("{:?}", Not(Mux(I, O, I)));
+}
 
 // O -> 0, I -> 1
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]

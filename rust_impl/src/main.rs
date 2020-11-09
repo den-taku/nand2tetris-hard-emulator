@@ -96,6 +96,27 @@ pub fn DMux(a: Bit, sel: Bit) -> (Bit, Bit) {
     )
 }
 
+pub fn Not16(a: [Bit; 16]) -> [Bit; 16] {
+    [
+        Not(a[0]),
+        Not(a[1]),
+        Not(a[2]),
+        Not(a[3]),
+        Not(a[4]),
+        Not(a[5]),
+        Not(a[6]),
+        Not(a[7]),
+        Not(a[8]),
+        Not(a[9]),
+        Not(a[10]),
+        Not(a[11]),
+        Not(a[12]),
+        Not(a[13]),
+        Not(a[14]),
+        Not(a[15]),
+    ]
+}
+
 pub fn Or8Way(a: [Bit; 8]) -> Bit {
     Or(
         Or(
@@ -121,10 +142,15 @@ pub fn Or8Way(a: [Bit; 8]) -> Bit {
     )
 }
 
+pub fn Mux4Way16(a: [Bit; 16], b: [Bit; 16], c: [Bit; 16], d: [Bit; 16], sel: [Bit; 2]) -> [Bit; 16] {
+
+    unimplemented!()
+}
+
 #[cfg(test)]
 mod tests {
     use super::Bit::{O, I};
-    use super::{Nand, Not, And, Or, Xor, Mux, DMux, Or8Way};
+    use super::{Nand, Not, And, Or, Xor, Mux, DMux, Not16, Or8Way};
     #[test]
     fn for_nand() {
         assert_eq!(Nand(O, O), I);
@@ -188,6 +214,26 @@ mod tests {
     fn for_dislay() {
         assert_eq!(format!("{}", I), "I".to_string());
         assert_eq!(format!("{}", O), "O".to_string());
+    }
+
+    #[test]
+    fn for_not16() {
+        assert_eq!(
+            Not16([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+            [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]
+        );
+        assert_eq!(
+            Not16([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
+            [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]
+        );
+        assert_eq!(
+            Not16([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I]),
+            [I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O]
+        );
+        assert_eq!(
+            Not16([O, O, O, O, O, O, O, O, I, I, I, I, I, I, I, I]),
+            [I, I, I, I, I, I, I, I, O, O, O, O, O, O, O, O]
+        );
     }
 
     #[test]

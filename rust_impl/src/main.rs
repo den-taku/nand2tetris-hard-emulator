@@ -1,9 +1,12 @@
 #![allow(dead_code, non_snake_case)]
 
 use crate::Bit::{O, I};
+use std::fmt;
+use std::fmt::{Display, Formatter};
 
 fn main(){
-    println!("{:?}", Not(Mux(I, O, I)));
+    println!("{}", Not(Mux(I, O, I)));
+    println!("{:?}", [I, O, I, O, I, I, O]);
 }
 
 // O -> 0, I -> 1
@@ -11,6 +14,16 @@ fn main(){
 pub enum Bit{
     O,
     I
+}
+
+impl Display for Bit {
+    fn fmt(&self, dest: &mut Formatter) -> fmt::Result {
+        let buf = match self {
+            I => "I".to_string(),
+            O => "O".to_string()
+        };
+        write!(dest, "{}", buf)
+    }
 }
 
 pub fn Nand(a: Bit, b: Bit) -> Bit {

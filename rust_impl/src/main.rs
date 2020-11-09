@@ -305,7 +305,57 @@ pub fn Mux4Way16(a: Word, b: Word, c: Word, d: Word, sel: [Bit; 2]) -> Word {
 }
 
 pub fn Mux8Way16(a: Word, b: Word, c: Word, d: Word, e: Word, f: Word, g: Word, h: Word, sel: [Bit; 3]) -> Word {
-    unimplemented!()
+    let Mux3 = |a: Bit, b: Bit, c: Bit, d: Bit, e: Bit, f: Bit, g: Bit, h: Bit, s0: Bit, s1: Bit, s2: Bit| -> Bit {
+        Mux(
+            Mux(
+                Mux(
+                    a,
+                    b,
+                    s2
+                ),
+                Mux(
+                    c,
+                    d,
+                    s2
+                ),
+                s1
+            ),
+            Mux(
+                Mux(
+                    e,
+                    f,
+                    s2
+                ),
+                Mux(
+                    g,
+                    h,
+                    s2
+                ),
+                s1
+            ),
+            s0
+        )
+    };
+    Word::new(
+        [
+            Mux3(a[0], b[0], c[0], d[0], e[0], f[0], g[0], h[0], sel[0], sel[1], sel[2]),
+            Mux3(a[1], b[1], c[1], d[1], e[1], f[1], g[1], h[1], sel[0], sel[1], sel[2]),
+            Mux3(a[2], b[2], c[2], d[2], e[2], f[2], g[2], h[2], sel[0], sel[1], sel[2]),
+            Mux3(a[3], b[3], c[3], d[3], e[3], f[3], g[3], h[3], sel[0], sel[1], sel[2]),
+            Mux3(a[4], b[4], c[4], d[4], e[4], f[4], g[4], h[4], sel[0], sel[1], sel[2]),
+            Mux3(a[5], b[5], c[5], d[5], e[5], f[5], g[5], h[5], sel[0], sel[1], sel[2]),
+            Mux3(a[6], b[6], c[6], d[6], e[6], f[6], g[6], h[6], sel[0], sel[1], sel[2]),
+            Mux3(a[7], b[7], c[7], d[7], e[7], f[7], g[7], h[7], sel[0], sel[1], sel[2]),
+            Mux3(a[8], b[8], c[8], d[8], e[8], f[8], g[8], h[8], sel[0], sel[1], sel[2]),
+            Mux3(a[9], b[9], c[9], d[9], e[9], f[9], g[9], h[9], sel[0], sel[1], sel[2]),
+            Mux3(a[10], b[10], c[10], d[10], e[10], f[10], g[10], h[10], sel[0], sel[1], sel[2]),
+            Mux3(a[11], b[11], c[11], d[11], e[11], f[11], g[11], h[11], sel[0], sel[1], sel[2]),
+            Mux3(a[12], b[12], c[12], d[12], e[12], f[12], g[12], h[12], sel[0], sel[1], sel[2]),
+            Mux3(a[13], b[13], c[13], d[13], e[13], f[13], g[13], h[13], sel[0], sel[1], sel[2]),
+            Mux3(a[14], b[14], c[14], d[14], e[14], f[14], g[14], h[14], sel[0], sel[1], sel[2]),
+            Mux3(a[15], b[15], c[15], d[15], e[15], f[15], g[15], h[15], sel[0], sel[1], sel[2]),
+        ]
+    )
 }
 
 #[cfg(test)]
@@ -313,7 +363,7 @@ mod tests {
     use super::Bit::{O, I};
     use super::Word;
     use super::{Nand, Not, And, Or, Xor, Mux, DMux, Not16, And16, Or16, Mux16,
-                Or8Way, Mux4Way16};
+                Or8Way, Mux4Way16, Mux8Way16};
     #[test]
     fn for_nand() {
         assert_eq!(Nand(O, O), I);
@@ -581,5 +631,121 @@ mod tests {
     fn for_index_mut() {
         let mut dummy = Word([I; 16]);
         dummy[16] = O;
+    }
+
+    #[test]
+    fn for_mux8way16() {
+        assert_eq!(
+            Mux8Way16(
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, I, I, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, I, I, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, I, I, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, I, I, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, I, I, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, I, I, O, O, O, O, O, O, O, O, O, O, O, O]),
+                [O, O, O]
+            ),
+            Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]) 
+        );
+        assert_eq!(
+            Mux8Way16(
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, I, I, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, I, I, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, I, I, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, I, I, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, I, I, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, I, I, O, O, O, O, O, O, O, O, O, O, O, O]),
+                [O, O, I]
+            ),
+            Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]) 
+        );
+        assert_eq!(
+            Mux8Way16(
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, I, I, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, I, I, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, I, I, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, I, I, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, I, I, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, I, I, O, O, O, O, O, O, O, O, O, O, O, O]),
+                [O, I, O]
+            ),
+            Word([O, O, O, O, O, O, O, O, O, O, O, O, I, I, O, O]) 
+        );
+        assert_eq!(
+            Mux8Way16(
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, I, I, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, I, I, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, I, I, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, I, I, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, I, I, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, I, I, O, O, O, O, O, O, O, O, O, O, O, O]),
+                [O, I, I]
+            ),
+            Word([O, O, O, O, O, O, O, O, O, O, I, I, O, O, O, O])
+        );
+        assert_eq!(
+            Mux8Way16(
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, I, I, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, I, I, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, I, I, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, I, I, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, I, I, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, I, I, O, O, O, O, O, O, O, O, O, O, O, O]),
+                [I, O, O]
+            ),
+            Word([O, O, O, O, O, O, O, O, I, I, O, O, O, O, O, O])
+        );
+        assert_eq!(
+            Mux8Way16(
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, I, I, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, I, I, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, I, I, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, I, I, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, I, I, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, I, I, O, O, O, O, O, O, O, O, O, O, O, O]),
+                [I, O, I]
+            ),
+            Word([O, O, O, O, O, O, I, I, O, O, O, O, O, O, O, O]) 
+        );
+        assert_eq!(
+            Mux8Way16(
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, I, I, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, I, I, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, I, I, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, I, I, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, I, I, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, I, I, O, O, O, O, O, O, O, O, O, O, O, O]),
+                [I, I, O]
+            ),
+            Word([O, O, O, O, I, I, O, O, O, O, O, O, O, O, O, O]) 
+        );
+        assert_eq!(
+            Mux8Way16(
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, I, I, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, I, I, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, I, I, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, I, I, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, I, I, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, I, I, O, O, O, O, O, O, O, O, O, O, O, O]),
+                [I, I, I]
+            ),
+            Word([O, O, I, I, O, O, O, O, O, O, O, O, O, O, O, O])
+        );
     }
 }

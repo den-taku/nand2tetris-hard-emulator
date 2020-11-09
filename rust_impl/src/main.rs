@@ -138,6 +138,27 @@ pub fn And16(a: [Bit; 16], b: [Bit; 16]) -> [Bit; 16] {
     ]
 } 
 
+pub fn Or16(a: [Bit; 16], b: [Bit; 16]) -> [Bit; 16] {
+    [
+        Or(a[0], b[0]),
+        Or(a[1], b[1]),
+        Or(a[2], b[2]),
+        Or(a[3], b[3]),
+        Or(a[4], b[4]),
+        Or(a[5], b[5]),
+        Or(a[6], b[6]),
+        Or(a[7], b[7]),
+        Or(a[8], b[8]),
+        Or(a[9], b[9]),
+        Or(a[10], b[10]),
+        Or(a[11], b[11]),
+        Or(a[12], b[12]),
+        Or(a[13], b[13]),
+        Or(a[14], b[14]),
+        Or(a[15], b[15]),
+    ]
+}
+
 pub fn Or8Way(a: [Bit; 8]) -> Bit {
     Or(
         Or(
@@ -171,7 +192,8 @@ pub fn Mux4Way16(a: [Bit; 16], b: [Bit; 16], c: [Bit; 16], d: [Bit; 16], sel: [B
 #[cfg(test)]
 mod tests {
     use super::Bit::{O, I};
-    use super::{Nand, Not, And, Or, Xor, Mux, DMux, Not16, And16, Or8Way};
+    use super::{Nand, Not, And, Or, Xor, Mux, DMux, Not16, And16, Or16,
+        Or8Way};
     #[test]
     fn for_nand() {
         assert_eq!(Nand(O, O), I);
@@ -293,6 +315,45 @@ mod tests {
                 [O, I, O, I, I, O, I, O, I, I, I, I, O, I, O, I],
             ),
             [O, O, O, I, O, O, I, O, I, O, O, I, O, O, O, I]
+        );
+    }
+
+    #[test]
+    fn for_or16() {
+        assert_eq!(
+            Or16(
+                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+            ),
+            [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]
+        );
+        assert_eq!(
+            Or16(
+                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+            ),
+            [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]
+        );
+        assert_eq!(
+            Or16(
+                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            ),
+            [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]
+        );
+        assert_eq!(
+            Or16(
+                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+            ),
+            [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]
+        );
+        assert_eq!(
+            Or16(
+                [O, O, I, I, O, I, I, O, I, O, O, I, I, O, I, I],
+                [O, I, O, I, I, O, I, O, I, I, I, I, O, I, O, I],
+            ),
+            [O, I, I, I, I, I, I, O, I, I, I, I, I, I, I, I]
         );
     }
 

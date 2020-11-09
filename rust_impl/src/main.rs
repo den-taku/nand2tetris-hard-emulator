@@ -159,6 +159,27 @@ pub fn Or16(a: [Bit; 16], b: [Bit; 16]) -> [Bit; 16] {
     ]
 }
 
+pub fn Mux16(a: [Bit; 16], b: [Bit; 16], sel: Bit) -> [Bit; 16] {
+    [
+        Mux(a[0], b[0], sel),
+        Mux(a[1], b[1], sel),
+        Mux(a[2], b[2], sel),
+        Mux(a[3], b[3], sel),
+        Mux(a[4], b[4], sel),
+        Mux(a[5], b[5], sel),
+        Mux(a[6], b[6], sel),
+        Mux(a[7], b[7], sel),
+        Mux(a[8], b[8], sel),
+        Mux(a[9], b[9], sel),
+        Mux(a[10], b[10], sel),
+        Mux(a[11], b[11], sel),
+        Mux(a[12], b[12], sel),
+        Mux(a[13], b[13], sel),
+        Mux(a[14], b[14], sel),
+        Mux(a[15], b[15], sel),
+    ]
+}
+
 pub fn Or8Way(a: [Bit; 8]) -> Bit {
     Or(
         Or(
@@ -192,7 +213,7 @@ pub fn Mux4Way16(a: [Bit; 16], b: [Bit; 16], c: [Bit; 16], d: [Bit; 16], sel: [B
 #[cfg(test)]
 mod tests {
     use super::Bit::{O, I};
-    use super::{Nand, Not, And, Or, Xor, Mux, DMux, Not16, And16, Or16,
+    use super::{Nand, Not, And, Or, Xor, Mux, DMux, Not16, And16, Or16, Mux16,
         Or8Way};
     #[test]
     fn for_nand() {
@@ -354,6 +375,42 @@ mod tests {
                 [O, I, O, I, I, O, I, O, I, I, I, I, O, I, O, I],
             ),
             [O, I, I, I, I, I, I, O, I, I, I, I, I, I, I, I]
+        );
+    }
+
+    #[test]
+    fn for_mux16() {
+        assert_eq!(
+            Mux16(
+                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+                O
+            ),
+            [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]
+        );
+        assert_eq!(
+            Mux16(
+                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+                I
+            ),
+            [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]
+        );
+        assert_eq!(
+            Mux16(
+                [O, I, O, I, O, I, O, I, I, O, I, O, I, O, I, O],
+                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+                O
+            ),
+            [O, I, O, I, O, I, O, I, I, O, I, O, I, O, I, O]
+        );
+        assert_eq!(
+            Mux16(
+                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+                [O, I, O, I, O, I, O, I, I, O, I, O, I, O, I, O],
+                I
+            ),
+            [O, I, O, I, O, I, O, I, I, O, I, O, I, O, I, O]
         );
     }
 

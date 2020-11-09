@@ -1,7 +1,7 @@
 #![allow(dead_code, non_snake_case)]
 
 use crate::logic::*;
-// use crate::logic::Bit::{I, O};
+use crate::logic::Bit::{I, O};
 
 // a, b -> curry, sum
 pub fn HalfAdder(a: Bit, b: Bit) -> [Bit; 2] {
@@ -137,11 +137,15 @@ pub fn Add16(a: Word, b: Word) -> Word {
     ])
 }
 
+pub fn Inc16(a: Word) -> Word {
+    Add16(a, Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]))
+}
+
 #[cfg(test)]
 mod tests{
     use crate::logic::Word;
     use crate::logic::Bit::{I, O};
-    use super::{HalfAdder, FullAdder, Add16};
+    use super::{HalfAdder, FullAdder, Add16, Inc16};
 
     #[test]
     fn for_halfadder() {
@@ -182,6 +186,19 @@ mod tests{
                 Word::new([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]), 
                 Word::new([O, I, I, O, O, I, O, O, I, O, O, I, I, O, I, O])),
             Word::new([O, I, I, O, O, I, O, O, I, O, O, I, I, O, O, I])
+        );
+    }
+
+    #[test]
+    fn for_inc16() {
+        assert_eq!(Inc16(Word::new([I; 16])), Word::new([O; 16]));
+        assert_eq!(
+            Inc16(Word::new([O, O, I, I, O, I, O, I, I, I, I, I, I, O, I, I])),
+            Word::new([O, O, I, I, O, I, O, I, I, I, I, I, I, I, O, O])
+        );
+        assert_eq!(
+            Inc16(Word::new([O, O, I, I, O, I, O, I, I, I, I, I, I, I, I, I])),
+            Word::new([O, O, I, I, O, I, I, O, O, O, O, O, O, O, O, O])
         );
     }
 }

@@ -146,8 +146,8 @@ pub fn Mux(a: Bit, b: Bit, sel: Bit) -> Bit {
     )
 }
 
-pub fn DMux(a: Bit, sel: Bit) -> (Bit, Bit) {
-    (
+pub fn DMux(a: Bit, sel: Bit) -> [Bit; 2] {
+    [
         And(
             a,
             Not(sel)
@@ -156,7 +156,7 @@ pub fn DMux(a: Bit, sel: Bit) -> (Bit, Bit) {
             a,
             sel
         )
-    )
+    ]
 }
 
 pub fn Not16(a: Word) -> Word {
@@ -358,12 +358,45 @@ pub fn Mux8Way16(a: Word, b: Word, c: Word, d: Word, e: Word, f: Word, g: Word, 
     )
 }
 
+pub fn DMux4Way(a: Bit, sel: [Bit; 2]) -> [Bit; 4] {
+    [
+        And(
+            And(
+                a,
+                Not(sel[0])
+            ),
+            Not(sel[1])
+        ),
+        And(
+            And(
+                a,
+                Not(sel[0])
+            ),
+            sel[1]
+        ),
+        And(
+            And(
+                a,
+                sel[0]
+            ),
+            Not(sel[1])
+        ),
+        And(
+            And(
+                a,
+                sel[0]
+            ),
+            sel[1]
+        ),
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     use super::Bit::{O, I};
     use super::Word;
     use super::{Nand, Not, And, Or, Xor, Mux, DMux, Not16, And16, Or16, Mux16,
-                Or8Way, Mux4Way16, Mux8Way16};
+                Or8Way, Mux4Way16, Mux8Way16, DMux4Way};
     #[test]
     fn for_nand() {
         assert_eq!(Nand(O, O), I);
@@ -417,10 +450,10 @@ mod tests {
 
     #[test]
     fn for_dmux() {
-        assert_eq!(DMux(O, O), (O, O));
-        assert_eq!(DMux(O, I), (O, O));
-        assert_eq!(DMux(I, O), (I, O));
-        assert_eq!(DMux(I, I), (O, I));
+        assert_eq!(DMux(O, O), [O, O]);
+        assert_eq!(DMux(O, I), [O, O]);
+        assert_eq!(DMux(I, O), [I, O]);
+        assert_eq!(DMux(I, I), [O, I]);
     }
 
     #[test]
@@ -747,5 +780,17 @@ mod tests {
             ),
             Word([O, O, I, I, O, O, O, O, O, O, O, O, O, O, O, O])
         );
+    }
+
+    #[test]
+    fn for_dmux4way() {
+        assert_eq!(DMux4Way(O, [O, O]), [O, O, O, O]);
+        assert_eq!(DMux4Way(O, [O, I]), [O, O, O, O]);
+        assert_eq!(DMux4Way(O, [I, O]), [O, O, O, O]);
+        assert_eq!(DMux4Way(O, [I, I]), [O, O, O, O]);
+        assert_eq!(DMux4Way(I, [O, O]), [I, O, O, O]);
+        assert_eq!(DMux4Way(I, [O, I]), [O, I, O, O]);
+        assert_eq!(DMux4Way(I, [I, O]), [O, O, I, O]);
+        assert_eq!(DMux4Way(I, [I, I]), [O, O, O, I]);
     }
 }

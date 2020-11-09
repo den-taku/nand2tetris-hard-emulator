@@ -206,15 +206,46 @@ pub fn Or8Way(a: [Bit; 8]) -> Bit {
 }
 
 pub fn Mux4Way16(a: [Bit; 16], b: [Bit; 16], c: [Bit; 16], d: [Bit; 16], sel: [Bit; 2]) -> [Bit; 16] {
-
-    unimplemented!()
+    let Mux2 = |a: Bit, b: Bit, c: Bit, d: Bit, s0: Bit, s1: Bit| -> Bit {
+        Mux(
+              Mux(
+                    a,
+                    b,
+                    s1
+                ),
+                Mux(
+                    c,
+                    d,
+                    s1
+                ),
+                s0
+            )
+    };
+    [
+        Mux2(a[0], b[0], c[0], d[0], sel[0], sel[1]),
+        Mux2(a[1], b[1], c[1], d[1], sel[0], sel[1]),
+        Mux2(a[2], b[2], c[2], d[2], sel[0], sel[1]),
+        Mux2(a[3], b[3], c[3], d[3], sel[0], sel[1]),
+        Mux2(a[4], b[4], c[4], d[4], sel[0], sel[1]),
+        Mux2(a[5], b[5], c[5], d[5], sel[0], sel[1]),
+        Mux2(a[6], b[6], c[6], d[6], sel[0], sel[1]),
+        Mux2(a[7], b[7], c[7], d[7], sel[0], sel[1]),
+        Mux2(a[8], b[8], c[8], d[8], sel[0], sel[1]),
+        Mux2(a[9], b[9], c[9], d[9], sel[0], sel[1]),
+        Mux2(a[10], b[10], c[10], d[10], sel[0], sel[1]),
+        Mux2(a[11], b[11], c[11], d[11], sel[0], sel[1]),
+        Mux2(a[12], b[12], c[12], d[12], sel[0], sel[1]),
+        Mux2(a[13], b[13], c[13], d[13], sel[0], sel[1]),
+        Mux2(a[14], b[14], c[14], d[14], sel[0], sel[1]),
+        Mux2(a[15], b[15], c[15], d[15], sel[0], sel[1]),
+    ]
 }
 
 #[cfg(test)]
 mod tests {
     use super::Bit::{O, I};
     use super::{Nand, Not, And, Or, Xor, Mux, DMux, Not16, And16, Or16, Mux16,
-        Or8Way};
+                Or8Way, Mux4Way16};
     #[test]
     fn for_nand() {
         assert_eq!(Nand(O, O), I);
@@ -425,5 +456,49 @@ mod tests {
         assert_eq!(Or8Way([I, I, I, I, O, I, I, O],), I);
         assert_eq!(Or8Way([I, I, O, I, I, I, I, I],), I);
         assert_eq!(Or8Way([I, I, I, I, I, I, I, I],), I);
+    }
+
+    #[test]
+    fn for_mux4way16() {
+        assert_eq!(
+            Mux4Way16(
+                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+                [O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I], 
+                [I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O], 
+                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I], 
+                [O, O]
+            ),
+            [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O] 
+        );
+        assert_eq!(
+            Mux4Way16(
+                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+                [O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I], 
+                [I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O], 
+                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I], 
+                [O, I]
+            ),
+            [O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I] 
+        );
+        assert_eq!(
+            Mux4Way16(
+                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+                [O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I], 
+                [I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O], 
+                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I], 
+                [I, O]
+            ),
+            [I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O] 
+        );
+        assert_eq!(
+            Mux4Way16(
+                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+                [O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I], 
+                [I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O], 
+                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I], 
+                [I, I]
+            ),
+            [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I] 
+        );
     }
 }

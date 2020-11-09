@@ -96,10 +96,35 @@ pub fn DMux(a: Bit, sel: Bit) -> (Bit, Bit) {
     )
 }
 
+pub fn Or8Way(a: [Bit; 8]) -> Bit {
+    Or(
+        Or(
+            Or(
+                a[0],
+                a[1]
+            ),
+            Or(
+                a[2],
+                a[3]
+            ),
+        ),
+        Or(
+            Or(
+                a[4],
+                a[5]
+            ),
+            Or(
+                a[6],
+                a[7]
+            )
+        )
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::Bit::{O, I};
-    use super::{Nand, Not, And, Or, Xor, Mux, DMux};
+    use super::{Nand, Not, And, Or, Xor, Mux, DMux, Or8Way};
     #[test]
     fn for_nand() {
         assert_eq!(Nand(O, O), I);
@@ -157,5 +182,24 @@ mod tests {
         assert_eq!(DMux(O, I), (O, O));
         assert_eq!(DMux(I, O), (I, O));
         assert_eq!(DMux(I, I), (O, I));
+    }
+
+    #[test]
+    fn for_dislay() {
+        assert_eq!(format!("{}", I), "I".to_string());
+        assert_eq!(format!("{}", O), "O".to_string());
+    }
+
+    #[test]
+    fn for_or8way() {
+        assert_eq!(Or8Way([O, O, O, O, O, O, O, O],), O);
+        assert_eq!(Or8Way([I, O, O, O, O, O, O, O],), I);
+        assert_eq!(Or8Way([O, I, I, O, O, O, O, O],), I);
+        assert_eq!(Or8Way([O, O, O, I, I, I, O, O],), I);
+        assert_eq!(Or8Way([I, O, I, O, O, O, I, I],), I);
+        assert_eq!(Or8Way([I, O, I, O, I, O, I, I],), I);
+        assert_eq!(Or8Way([I, I, I, I, O, I, I, O],), I);
+        assert_eq!(Or8Way([I, I, O, I, I, I, I, I],), I);
+        assert_eq!(Or8Way([I, I, I, I, I, I, I, I],), I);
     }
 }

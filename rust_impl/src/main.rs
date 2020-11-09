@@ -8,6 +8,8 @@ use std::ops::{Index, IndexMut};
 fn main(){
     println!("{}", Not(Mux(I, O, I)));
     println!("{:?}", [I, O, I, O, I, I, O]);
+    // let _word = Word([I; 16]);
+    // println!("kkk");
     println!("{}", Word([I; 16]));
 }
 
@@ -31,6 +33,32 @@ impl Display for Bit {
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Word ([Bit; 16]);
 
+impl Word {
+    pub fn new(a: [Bit; 16]) -> Self {
+        Word(a)
+    }
+    pub fn to_slice(&self) -> [Bit; 16] {
+        [
+            self[0],
+            self[1],
+            self[2],
+            self[3],
+            self[4],
+            self[5],
+            self[6],
+            self[7],
+            self[8],
+            self[9],
+            self[10],
+            self[11],
+            self[12],
+            self[13],
+            self[14],
+            self[15],
+        ]
+    }
+}
+
 impl Display for Word {
     fn fmt(&self, dest: &mut Formatter) -> fmt::Result {
         let mut buf = "[".to_string();
@@ -48,7 +76,7 @@ impl Index<usize> for Word {
         if 15 < index {
             panic!(format!("index fail: {} is out of range.", index));
         }
-        &self[index]
+        &self.0[index]
     }
 }
 
@@ -57,7 +85,7 @@ impl IndexMut<usize> for Word {
         if 15 < index {
             panic!(format!("index_mut fail: {} is out of range.", index));
         }
-        &mut self[index]
+        self.0.index_mut(index)
     }
 }
 
@@ -131,8 +159,8 @@ pub fn DMux(a: Bit, sel: Bit) -> (Bit, Bit) {
     )
 }
 
-pub fn Not16(a: [Bit; 16]) -> [Bit; 16] {
-    [
+pub fn Not16(a: Word) -> Word {
+    Word::new([
         Not(a[0]),
         Not(a[1]),
         Not(a[2]),
@@ -149,11 +177,11 @@ pub fn Not16(a: [Bit; 16]) -> [Bit; 16] {
         Not(a[13]),
         Not(a[14]),
         Not(a[15]),
-    ]
+    ])
 }
 
-pub fn And16(a: [Bit; 16], b: [Bit; 16]) -> [Bit; 16] {
-    [
+pub fn And16(a: Word, b: Word) -> Word {
+    Word::new([
         And(a[0], b[0]),
         And(a[1], b[1]),
         And(a[2], b[2]),
@@ -170,11 +198,11 @@ pub fn And16(a: [Bit; 16], b: [Bit; 16]) -> [Bit; 16] {
         And(a[13], b[13]),
         And(a[14], b[14]),
         And(a[15], b[15]),
-    ]
+    ])
 } 
 
-pub fn Or16(a: [Bit; 16], b: [Bit; 16]) -> [Bit; 16] {
-    [
+pub fn Or16(a: Word, b: Word) -> Word {
+    Word::new([
         Or(a[0], b[0]),
         Or(a[1], b[1]),
         Or(a[2], b[2]),
@@ -191,11 +219,11 @@ pub fn Or16(a: [Bit; 16], b: [Bit; 16]) -> [Bit; 16] {
         Or(a[13], b[13]),
         Or(a[14], b[14]),
         Or(a[15], b[15]),
-    ]
+    ])
 }
 
-pub fn Mux16(a: [Bit; 16], b: [Bit; 16], sel: Bit) -> [Bit; 16] {
-    [
+pub fn Mux16(a: Word, b: Word, sel: Bit) -> Word {
+    Word::new([
         Mux(a[0], b[0], sel),
         Mux(a[1], b[1], sel),
         Mux(a[2], b[2], sel),
@@ -212,7 +240,7 @@ pub fn Mux16(a: [Bit; 16], b: [Bit; 16], sel: Bit) -> [Bit; 16] {
         Mux(a[13], b[13], sel),
         Mux(a[14], b[14], sel),
         Mux(a[15], b[15], sel),
-    ]
+    ])
 }
 
 pub fn Or8Way(a: [Bit; 8]) -> Bit {
@@ -240,7 +268,7 @@ pub fn Or8Way(a: [Bit; 8]) -> Bit {
     )
 }
 
-pub fn Mux4Way16(a: [Bit; 16], b: [Bit; 16], c: [Bit; 16], d: [Bit; 16], sel: [Bit; 2]) -> [Bit; 16] {
+pub fn Mux4Way16(a: Word, b: Word, c: Word, d: Word, sel: [Bit; 2]) -> Word {
     let Mux2 = |a: Bit, b: Bit, c: Bit, d: Bit, s0: Bit, s1: Bit| -> Bit {
         Mux(
               Mux(
@@ -256,7 +284,7 @@ pub fn Mux4Way16(a: [Bit; 16], b: [Bit; 16], c: [Bit; 16], d: [Bit; 16], sel: [B
                 s0
             )
     };
-    [
+    Word::new([
         Mux2(a[0], b[0], c[0], d[0], sel[0], sel[1]),
         Mux2(a[1], b[1], c[1], d[1], sel[0], sel[1]),
         Mux2(a[2], b[2], c[2], d[2], sel[0], sel[1]),
@@ -273,16 +301,15 @@ pub fn Mux4Way16(a: [Bit; 16], b: [Bit; 16], c: [Bit; 16], d: [Bit; 16], sel: [B
         Mux2(a[13], b[13], c[13], d[13], sel[0], sel[1]),
         Mux2(a[14], b[14], c[14], d[14], sel[0], sel[1]),
         Mux2(a[15], b[15], c[15], d[15], sel[0], sel[1]),
-    ]
+    ])
 }
 
-pub fn Mux8Way16(a: [Bit; 16], b: [Bit; 16], c: [Bit; 16]) -> [Bit; 16] {
+pub fn Mux8Way16(a: Word, b: Word, c: Word, d: Word, e: Word, f: Word, g: Word, h: Word, sel: [Bit; 3]) -> Word {
     unimplemented!()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::Bit;
     use super::Bit::{O, I};
     use super::Word;
     use super::{Nand, Not, And, Or, Xor, Mux, DMux, Not16, And16, Or16, Mux16,
@@ -355,20 +382,20 @@ mod tests {
     #[test]
     fn for_not16() {
         assert_eq!(
-            Not16([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
-            [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]
+            Not16(Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O])),
+            Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I])
         );
         assert_eq!(
-            Not16([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
-            [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]
+            Not16(Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I])),
+            Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O])
         );
         assert_eq!(
-            Not16([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I]),
-            [I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O]
+            Not16(Word([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I])),
+            Word([I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O])
         );
         assert_eq!(
-            Not16([O, O, O, O, O, O, O, O, I, I, I, I, I, I, I, I]),
-            [I, I, I, I, I, I, I, I, O, O, O, O, O, O, O, O]
+            Not16(Word([O, O, O, O, O, O, O, O, I, I, I, I, I, I, I, I])),
+            Word([I, I, I, I, I, I, I, I, O, O, O, O, O, O, O, O])
         );
     }
 
@@ -376,38 +403,38 @@ mod tests {
     fn for_and16() {
         assert_eq!(
             And16(
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
             ),
-            [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]
+            Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O])
         );
         assert_eq!(
             And16(
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
             ),
-            [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]
+            Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O])
         );
         assert_eq!(
             And16(
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
             ),
-            [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]
+            Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O])
         );
         assert_eq!(
             And16(
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
             ),
-            [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]
+            Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I])
         );
         assert_eq!(
             And16(
-                [O, O, I, I, O, I, I, O, I, O, O, I, I, O, I, I],
-                [O, I, O, I, I, O, I, O, I, I, I, I, O, I, O, I],
+                Word([O, O, I, I, O, I, I, O, I, O, O, I, I, O, I, I]),
+                Word([O, I, O, I, I, O, I, O, I, I, I, I, O, I, O, I]),
             ),
-            [O, O, O, I, O, O, I, O, I, O, O, I, O, O, O, I]
+            Word([O, O, O, I, O, O, I, O, I, O, O, I, O, O, O, I])
         );
     }
 
@@ -415,38 +442,38 @@ mod tests {
     fn for_or16() {
         assert_eq!(
             Or16(
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
             ),
-            [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]
+            Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O])
         );
         assert_eq!(
             Or16(
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
             ),
-            [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]
+            Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I])
         );
         assert_eq!(
             Or16(
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
             ),
-            [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]
+            Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I])
         );
         assert_eq!(
             Or16(
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
             ),
-            [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]
+            Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I])
         );
         assert_eq!(
             Or16(
-                [O, O, I, I, O, I, I, O, I, O, O, I, I, O, I, I],
-                [O, I, O, I, I, O, I, O, I, I, I, I, O, I, O, I],
+                Word([O, O, I, I, O, I, I, O, I, O, O, I, I, O, I, I]),
+                Word([O, I, O, I, I, O, I, O, I, I, I, I, O, I, O, I]),
             ),
-            [O, I, I, I, I, I, I, O, I, I, I, I, I, I, I, I]
+            Word([O, I, I, I, I, I, I, O, I, I, I, I, I, I, I, I])
         );
     }
 
@@ -454,35 +481,35 @@ mod tests {
     fn for_mux16() {
         assert_eq!(
             Mux16(
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
                 O
             ),
-            [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]
+            Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O])
         );
         assert_eq!(
             Mux16(
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
                 I
             ),
-            [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]
+            Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I])
         );
         assert_eq!(
             Mux16(
-                [O, I, O, I, O, I, O, I, I, O, I, O, I, O, I, O],
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I],
+                Word([O, I, O, I, O, I, O, I, I, O, I, O, I, O, I, O]),
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
                 O
             ),
-            [O, I, O, I, O, I, O, I, I, O, I, O, I, O, I, O]
+            Word([O, I, O, I, O, I, O, I, I, O, I, O, I, O, I, O])
         );
         assert_eq!(
             Mux16(
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
-                [O, I, O, I, O, I, O, I, I, O, I, O, I, O, I, O],
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, I, O, I, O, I, O, I, I, O, I, O, I, O, I, O]),
                 I
             ),
-            [O, I, O, I, O, I, O, I, I, O, I, O, I, O, I, O]
+            Word([O, I, O, I, O, I, O, I, I, O, I, O, I, O, I, O])
         );
     }
 
@@ -503,43 +530,43 @@ mod tests {
     fn for_mux4way16() {
         assert_eq!(
             Mux4Way16(
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
-                [O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I], 
-                [I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O], 
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I], 
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I]), 
+                Word([I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O]), 
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]), 
                 [O, O]
             ),
-            [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O] 
+            Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O])
         );
         assert_eq!(
             Mux4Way16(
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
-                [O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I], 
-                [I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O], 
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I], 
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I]), 
+                Word([I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O]), 
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]), 
                 [O, I]
             ),
-            [O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I] 
+            Word([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I] )
         );
         assert_eq!(
             Mux4Way16(
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
-                [O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I], 
-                [I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O], 
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I], 
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I]), 
+                Word([I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O]), 
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]), 
                 [I, O]
             ),
-            [I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O] 
+            Word([I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O])
         );
         assert_eq!(
             Mux4Way16(
-                [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O],
-                [O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I], 
-                [I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O], 
-                [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I], 
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I]), 
+                Word([I, O, I, O, I, O, I, O, I, O, I, O, I, O, I, O]), 
+                Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]), 
                 [I, I]
             ),
-            [I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I] 
+            Word([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I])
         );
     }
 

@@ -141,6 +141,102 @@ pub fn Inc16(a: Word) -> Word {
     Add16(a, Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]))
 }
 
+// zx : a -> 0
+// nx : a -> !a
+// zy : b -> 0
+// ny : b -> !b
+// f : when 0 -> add, when 1 -> and
+// no : out -> !out
+// see figre 2-6 in p.36
+pub fn ALU(a: Word, b: Word, zx: Bit, nx: Bit, zy: Bit, ny: Bit, f: Bit, no: Bit) -> Word {
+    // let FunctionFlag = |input: Word, flag: Bit| -> [[Bit; 2];16] {
+    //     [
+    //         DMux(
+    //             input[0],
+    //             Not(input[0]),
+    //             flag
+    //         ),
+    //         DMux(
+    //             input[1],
+    //             Not(input[1]),
+    //             flag
+    //         ),
+    //         DMux(
+    //             input[2],
+    //             Not(input[2]),
+    //             flag
+    //         ),
+    //         DMux(
+    //             input[3],
+    //             Not(input[3]),
+    //             flag
+    //         ),
+    //         DMux(
+    //             input[4],
+    //             Not(input[4]),
+    //             flag
+    //         ),
+    //         DMux(
+    //             input[5],
+    //             Not(input[5]),
+    //             flag
+    //         ),
+    //         Mux(
+    //             input[6],
+    //             Not(input[6]),
+    //             flag
+    //         ),
+    //         Mux(
+    //             input[7],
+    //             Not(input[7]),
+    //             flag
+    //         ),
+    //         Mux(
+    //             input[8],
+    //             Not(input[8]),
+    //             flag
+    //         ),
+    //         Mux(
+    //             input[9],
+    //             Not(input[9]),
+    //             flag
+    //         ),
+    //         Mux(
+    //             input[10],
+    //             Not(input[10]),
+    //             flag
+    //         ),
+    //         Mux(
+    //             input[11],
+    //             Not(input[11]),
+    //             flag
+    //         ),
+    //         Mux(
+    //             input[12],
+    //             Not(input[12]),
+    //             flag
+    //         ),
+    //         Mux(
+    //             input[13],
+    //             Not(input[13]),
+    //             flag
+    //         ),
+    //         Mux(
+    //             input[14],
+    //             Not(input[14]),
+    //             flag
+    //         ),
+    //         Mux(
+    //             input[15],
+    //             Not(input[15]),
+    //             flag
+    //         ),
+    //     ]
+    // };
+
+    unimplemented!()
+}
+
 #[cfg(test)]
 mod tests{
     use crate::logic::Word;

@@ -151,6 +151,19 @@ pub fn DMux(a: Bit, sel: Bit) -> [Bit; 2] {
     ]
 }
 
+pub fn DMux16(a: Word, sel: Bit) -> [Word; 2] {
+    [
+        And16(
+            a,
+            Not16(Word::new([sel; 16]))
+        ),
+        And16(
+            a,
+            Word::new([sel; 16])
+        )
+    ]
+}
+
 pub fn Not16(a: Word) -> Word {
     Word::new([
         Not(a[0]),
@@ -473,7 +486,7 @@ mod tests {
     use super::Bit::{O, I};
     use super::Word;
     use super::{Nand, Not, And, Or, Xor, Mux, DMux, Not16, And16, Or16, Mux16,
-                Or8Way, Mux4Way16, Mux8Way16, DMux4Way, DMux8Way};
+                Or8Way, Mux4Way16, Mux8Way16, DMux4Way, DMux8Way, DMux16};
     #[test]
     fn for_nand() {
         assert_eq!(Nand(O, O), I);
@@ -889,5 +902,29 @@ mod tests {
         assert_eq!(DMux8Way(I, [I, O, I]), [O, O, O, O, O, I, O, O]);
         assert_eq!(DMux8Way(I, [I, I, O]), [O, O, O, O, O, O, I, O]);
         assert_eq!(DMux8Way(I, [I, I, I]), [O, O, O, O, O, O, O, I]);
+    }
+
+    #[test]
+    fn for_dmux16() {
+        assert_eq!(
+            DMux16(
+                Word([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I]),
+                O
+            ),
+            [
+                Word([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I]),
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O])
+            ]
+        );
+        assert_eq!(
+            DMux16(
+                Word([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I]),
+                I
+            ),
+            [
+                Word([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I])
+            ]
+        );
     }
 }

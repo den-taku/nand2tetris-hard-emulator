@@ -148,100 +148,63 @@ pub fn Inc16(a: Word) -> Word {
 // f : when 0 -> add, when 1 -> and
 // no : out -> !out
 // see figre 2-6 in p.36
-pub fn ALU(a: Word, b: Word, zx: Bit, nx: Bit, zy: Bit, ny: Bit, f: Bit, no: Bit) -> Word {
-    // let FunctionFlag = |input: Word, flag: Bit| -> [[Bit; 2];16] {
-    //     [
-    //         DMux(
-    //             input[0],
-    //             Not(input[0]),
-    //             flag
-    //         ),
-    //         DMux(
-    //             input[1],
-    //             Not(input[1]),
-    //             flag
-    //         ),
-    //         DMux(
-    //             input[2],
-    //             Not(input[2]),
-    //             flag
-    //         ),
-    //         DMux(
-    //             input[3],
-    //             Not(input[3]),
-    //             flag
-    //         ),
-    //         DMux(
-    //             input[4],
-    //             Not(input[4]),
-    //             flag
-    //         ),
-    //         DMux(
-    //             input[5],
-    //             Not(input[5]),
-    //             flag
-    //         ),
-    //         Mux(
-    //             input[6],
-    //             Not(input[6]),
-    //             flag
-    //         ),
-    //         Mux(
-    //             input[7],
-    //             Not(input[7]),
-    //             flag
-    //         ),
-    //         Mux(
-    //             input[8],
-    //             Not(input[8]),
-    //             flag
-    //         ),
-    //         Mux(
-    //             input[9],
-    //             Not(input[9]),
-    //             flag
-    //         ),
-    //         Mux(
-    //             input[10],
-    //             Not(input[10]),
-    //             flag
-    //         ),
-    //         Mux(
-    //             input[11],
-    //             Not(input[11]),
-    //             flag
-    //         ),
-    //         Mux(
-    //             input[12],
-    //             Not(input[12]),
-    //             flag
-    //         ),
-    //         Mux(
-    //             input[13],
-    //             Not(input[13]),
-    //             flag
-    //         ),
-    //         Mux(
-    //             input[14],
-    //             Not(input[14]),
-    //             flag
-    //         ),
-    //         Mux(
-    //             input[15],
-    //             Not(input[15]),
-    //             flag
-    //         ),
-    //     ]
-    // };
-
-    unimplemented!()
+pub fn ALU(a: Word, b: Word, zx: Bit, nx: Bit, zy: Bit, ny: Bit, f: Bit, no: Bit) -> (Word, Bit, Bit) {
+    let a_muxed_by_zx = Mux16(
+        a,
+        Word::new([Not(zx); 16]),
+        zx
+    );
+    let input_a = DMux16(
+        Mux16(
+            a_muxed_by_zx,
+            Not16(a_muxed_by_zx),
+            nx
+        ),
+        f
+    );
+    let b_muxed_by_zx = Mux16(
+        b,
+        Word::new([Not(zy); 16]),
+        zy
+    );
+    let input_b = DMux16(
+        Mux16(
+            b_muxed_by_zx,
+            Not16(b_muxed_by_zx),
+            ny
+        ),
+        f
+    );
+    let integrated = Add16(
+        And16(
+            input_a[0],
+            input_b[0]
+        ),
+        Add16(
+            input_a[1],
+            input_b[1]
+        )
+    );
+    let r = Mux16(
+        integrated,
+        Not16(integrated),
+        no
+    );
+    let zr = Not(
+        Or(
+            Or8Way([r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7]]),
+            Or8Way([r[8], r[9], r[10], r[11], r[12], r[13], r[14], r[15]])
+        )
+    );
+    let ng = r[0];
+    (r, zr, ng)
 }
 
 #[cfg(test)]
 mod tests{
     use crate::logic::Word;
     use crate::logic::Bit::{I, O};
-    use super::{HalfAdder, FullAdder, Add16, Inc16};
+    use super::{HalfAdder, FullAdder, Add16, Inc16, ALU};
 
     #[test]
     fn for_halfadder() {
@@ -295,6 +258,66 @@ mod tests{
         assert_eq!(
             Inc16(Word::new([O, O, I, I, O, I, O, I, I, I, I, I, I, I, I, I])),
             Word::new([O, O, I, I, O, I, I, O, O, O, O, O, O, O, O, O])
+        );
+    }
+
+    #[test]
+    fn for_alu() {
+        assert_eq!( // line 1
+            ALU(
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word::new([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
+                I, O, I, O, I, O
+            ),
+            (Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), I, O)
+        );
+        assert_eq!( // line 2
+            ALU(
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word::new([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
+                I, I, I, I, I, I
+            ),
+            (Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]), O, O)
+        );
+        assert_eq!( // line 16
+            ALU(
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+                Word::new([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]),
+                O, I, O, O, I, I
+            ),
+            (Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]), O, O)
+        );
+        assert_eq!( // line 20
+            ALU(
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, I, O, O, O, I]),
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+                I, O, I, O, I, O
+            ),
+            (Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), I, O)
+        );
+        assert_eq!( // line 23
+            ALU(
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, I, O, O, O, I]),
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+                O, O, I, I, O, O
+            ),
+            (Word::new([O, O, O, O, O, O, O, O, O, O, O, I, O, O, O, I]), O, O)
+        );
+        assert_eq!( // line 27
+            ALU(
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, I, O, O, O, I]),
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+                O, O, I, I, I, I
+            ),
+            (Word::new([I, I, I, I, I, I, I, I, I, I, I, O, I, I, I, I]), O, I)
+        );
+        assert_eq!( // line 30
+            ALU(
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, I, O, O, O, I]),
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+                O, O, I, I, I, O
+            ),
+            (Word::new([O, O, O, O, O, O, O, O, O, O, O, I, O, O, O, O]), O, O)
         );
     }
 }

@@ -32,7 +32,7 @@ impl Clock {
 }
 
 // must use input and output both
-// when use, save input value and output ont separately in variables
+// when use, save input value and output one separately in variables
 // use input first
 // primitive sequential gate
 #[derive(Debug, Copy, Clone)]

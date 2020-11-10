@@ -81,6 +81,8 @@ impl IndexMut<usize> for Word {
     }
 }
 
+// primitive logic gate
+// this composes all logic
 pub fn Nand(a: Bit, b: Bit) -> Bit {
     match a {
         O => match b {

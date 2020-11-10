@@ -18,4 +18,10 @@ fn main() {
             Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
             O, O, I, I, O, O
         ));
+    
+    // let mut clock = Clock::new();
+    // loop {
+    //     clock.next();
+    //     println!("{:?}", clock.state());
+    // }
 }

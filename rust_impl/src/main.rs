@@ -1,9 +1,11 @@
 mod logic;
 mod arithmetic;
+mod sequential;
 
 use logic::*;
 use logic::Bit::{O, I};
 use arithmetic::*;
+use sequential::*;
 
 fn main() {
     println!("{}", And(I, O));

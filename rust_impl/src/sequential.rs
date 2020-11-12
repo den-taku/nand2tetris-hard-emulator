@@ -1,7 +1,7 @@
 #![allow(dead_code, non_snake_case)]
 
 use crate::ClockState::{Tick, Tock};
-use crate::logic::{bit, bit::O, Mux};
+use crate::logic::{bit, bit::O, *};
 
 // tick: input, update internal state
 // tock: output 
@@ -102,6 +102,56 @@ impl Bit {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct Register {
+    bits: [Bit; 16]
+} 
+
+impl Register {
+    pub fn new() -> Self {
+        Register { bits: [Bit::new(); 16] }
+    }
+
+    pub fn input(&mut self, clock: &Clock, input: Word, load: bit) {
+        self.bits[0].input(clock, input[0], load);
+        self.bits[1].input(clock, input[1], load);
+        self.bits[2].input(clock, input[2], load);
+        self.bits[3].input(clock, input[3], load);
+        self.bits[4].input(clock, input[4], load);
+        self.bits[5].input(clock, input[5], load);
+        self.bits[6].input(clock, input[6], load);
+        self.bits[7].input(clock, input[7], load);
+        self.bits[8].input(clock, input[8], load);
+        self.bits[9].input(clock, input[9], load);
+        self.bits[10].input(clock, input[10], load);
+        self.bits[11].input(clock, input[11], load);
+        self.bits[12].input(clock, input[12], load);
+        self.bits[13].input(clock, input[13], load);
+        self.bits[14].input(clock, input[14], load);
+        self.bits[15].input(clock, input[15], load);
+    }
+
+    pub fn output(&self, clock: &Clock) -> Word {
+        Word::new([
+            self.bits[0].output(clock),
+            self.bits[1].output(clock),
+            self.bits[2].output(clock),
+            self.bits[3].output(clock),
+            self.bits[4].output(clock),
+            self.bits[5].output(clock),
+            self.bits[6].output(clock),
+            self.bits[7].output(clock),
+            self.bits[8].output(clock),
+            self.bits[9].output(clock),
+            self.bits[10].output(clock),
+            self.bits[11].output(clock),
+            self.bits[12].output(clock),
+            self.bits[13].output(clock),
+            self.bits[14].output(clock),
+            self.bits[15].output(clock),
+        ])
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -204,6 +254,64 @@ mod tests {
         bit.input(&clock, I, O);
         // output new
         assert_eq!(bit.output(&clock), O);
+
+
+    }
+
+    #[test]
+    fn for_register() {
+        // initialize as past: O, new: O
+        let mut register = Register::new();
+        // initialize state as Tick
+        let mut clock = Clock::new();
+
+        let word_i = Word::new([I; 16]);
+        let word_o = Word::new([O; 16]);
+
+        // input as past: O, new: I
+        register.input(&clock, word_i, I);
+        // output past
+        assert_eq!(register.output(&clock), word_o);
+
+        // Tock
+        clock.next();
+
+        // nothing happened
+        register.input(&clock, word_o, O);
+        // output new
+        assert_eq!(register.output(&clock), word_i);
+
+        // Tick
+        clock.next();
+
+        // initialize as past: I, new: I
+        register.input(&clock, word_o, O);
+        // output past
+        assert_eq!(register.output(&clock), word_i);
+
+        // Tock
+        clock.next();
+
+        // nothing happened
+        register.input(&clock, word_o, I);
+        // output new
+        assert_eq!(register.output(&clock), word_i);
+
+        // Tick
+        clock.next();
+
+        // initialize as past: I, new: O
+        register.input(&clock, word_o, I);
+        // output past
+        assert_eq!(register.output(&clock), word_i);
+
+        // Tock
+        clock.next();
+
+        // nothing happened
+        register.input(&clock, word_i, O);
+        // output new
+        assert_eq!(register.output(&clock), word_o);
 
 
     }

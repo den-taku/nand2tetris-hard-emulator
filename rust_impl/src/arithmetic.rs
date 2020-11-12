@@ -1,10 +1,10 @@
 #![allow(dead_code, non_snake_case)]
 
 use crate::logic::*;
-use crate::logic::Bit::{I, O};
+use crate::logic::bit::{I, O};
 
 // a, b -> curry, sum
-pub fn HalfAdder(a: Bit, b: Bit) -> [Bit; 2] {
+pub fn HalfAdder(a: bit, b: bit) -> [bit; 2] {
     [
         And(
             a,
@@ -19,7 +19,7 @@ pub fn HalfAdder(a: Bit, b: Bit) -> [Bit; 2] {
 
 // a, b, curry -> curry, sum
 // c = a * b + b * curry + curry * a
-pub fn FullAdder(a: Bit, b: Bit, c: Bit) -> [Bit; 2] {
+pub fn FullAdder(a: bit, b: bit, c: bit) -> [bit; 2] {
     let half_adder1 = HalfAdder(
         a,
         b
@@ -148,7 +148,7 @@ pub fn Inc16(a: Word) -> Word {
 // f : when 0 -> add, when 1 -> and
 // no : out -> !out
 // see figre 2-6 in p.36
-pub fn ALU(a: Word, b: Word, zx: Bit, nx: Bit, zy: Bit, ny: Bit, f: Bit, no: Bit) -> (Word, Bit, Bit) {
+pub fn ALU(a: Word, b: Word, zx: bit, nx: bit, zy: bit, ny: bit, f: bit, no: bit) -> (Word, bit, bit) {
     let a_muxed_by_zx = Mux16(
         a,
         Word::new([Not(zx); 16]),
@@ -203,7 +203,7 @@ pub fn ALU(a: Word, b: Word, zx: Bit, nx: Bit, zy: Bit, ny: Bit, f: Bit, no: Bit
 #[cfg(test)]
 mod tests{
     use crate::logic::Word;
-    use crate::logic::Bit::{I, O};
+    use crate::logic::bit::{I, O};
     use super::{HalfAdder, FullAdder, Add16, Inc16, ALU};
 
     #[test]

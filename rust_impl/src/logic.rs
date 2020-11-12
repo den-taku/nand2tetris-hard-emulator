@@ -1,18 +1,18 @@
-#![allow(dead_code, non_snake_case)]
+#![allow(dead_code, non_snake_case, non_camel_case_types)]
 
-use crate::Bit::{O, I};
+use crate::bit::{O, I};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::ops::{Index, IndexMut};
 
 // O -> 0, I -> 1
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum Bit{
+pub enum bit{
     O,
     I
 }
 
-impl Display for Bit {
+impl Display for bit {
     fn fmt(&self, dest: &mut Formatter) -> fmt::Result {
         let buf = match self {
             I => "I".to_string(),
@@ -23,13 +23,13 @@ impl Display for Bit {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct Word ([Bit; 16]);
+pub struct Word ([bit; 16]);
 
 impl Word {
-    pub fn new(a: [Bit; 16]) -> Self {
+    pub fn new(a: [bit; 16]) -> Self {
         Word(a)
     }
-    pub fn to_slice(&self) -> [Bit; 16] {
+    pub fn to_slice(&self) -> [bit; 16] {
         [
             self[0],
             self[1],
@@ -63,7 +63,7 @@ impl Display for Word {
 }
 
 impl Index<usize> for Word {
-    type Output = Bit;
+    type Output = bit;
     fn index(&self, index: usize) -> &Self::Output {
         if 15 < index {
             panic!(format!("index fail: {} is out of range.", index));
@@ -83,7 +83,7 @@ impl IndexMut<usize> for Word {
 
 // primitive logic gate
 // this composes all logic
-pub fn Nand(a: Bit, b: Bit) -> Bit {
+pub fn Nand(a: bit, b: bit) -> bit {
     match a {
         O => match b {
             O => I,
@@ -96,25 +96,25 @@ pub fn Nand(a: Bit, b: Bit) -> Bit {
     }
 }
 
-pub fn Not(a: Bit) -> Bit {
+pub fn Not(a: bit) -> bit {
     Nand(a, a)
 }
 
-pub fn And(a: Bit, b: Bit) -> Bit {
+pub fn And(a: bit, b: bit) -> bit {
     Nand(
         Nand(a, b),
         Nand(a, b)
     )
 }
 
-pub fn Or(a: Bit, b: Bit) -> Bit {
+pub fn Or(a: bit, b: bit) -> bit {
     Nand(
         Nand(a, a),
         Nand(b, b)
     )
 }
 
-pub fn Xor(a: Bit, b: Bit) -> Bit {
+pub fn Xor(a: bit, b: bit) -> bit {
     Or(
         And(
             a,
@@ -127,7 +127,7 @@ pub fn Xor(a: Bit, b: Bit) -> Bit {
     )
 }
 
-pub fn Mux(a: Bit, b: Bit, sel: Bit) -> Bit {
+pub fn Mux(a: bit, b: bit, sel: bit) -> bit {
     Or(
         And(
             a,
@@ -140,7 +140,7 @@ pub fn Mux(a: Bit, b: Bit, sel: Bit) -> Bit {
     )
 }
 
-pub fn DMux(a: Bit, sel: Bit) -> [Bit; 2] {
+pub fn DMux(a: bit, sel: bit) -> [bit; 2] {
     [
         And(
             a,
@@ -153,7 +153,7 @@ pub fn DMux(a: Bit, sel: Bit) -> [Bit; 2] {
     ]
 }
 
-pub fn DMux16(a: Word, sel: Bit) -> [Word; 2] {
+pub fn DMux16(a: Word, sel: bit) -> [Word; 2] {
     [
         And16(
             a,
@@ -229,7 +229,7 @@ pub fn Or16(a: Word, b: Word) -> Word {
     ])
 }
 
-pub fn Mux16(a: Word, b: Word, sel: Bit) -> Word {
+pub fn Mux16(a: Word, b: Word, sel: bit) -> Word {
     Word::new([
         Mux(a[0], b[0], sel),
         Mux(a[1], b[1], sel),
@@ -250,7 +250,7 @@ pub fn Mux16(a: Word, b: Word, sel: Bit) -> Word {
     ])
 }
 
-pub fn Or8Way(a: [Bit; 8]) -> Bit {
+pub fn Or8Way(a: [bit; 8]) -> bit {
     Or(
         Or(
             Or(
@@ -275,8 +275,8 @@ pub fn Or8Way(a: [Bit; 8]) -> Bit {
     )
 }
 
-pub fn Mux4Way16(a: Word, b: Word, c: Word, d: Word, sel: [Bit; 2]) -> Word {
-    let Mux2 = |a: Bit, b: Bit, c: Bit, d: Bit, s0: Bit, s1: Bit| -> Bit {
+pub fn Mux4Way16(a: Word, b: Word, c: Word, d: Word, sel: [bit; 2]) -> Word {
+    let Mux2 = |a: bit, b: bit, c: bit, d: bit, s0: bit, s1: bit| -> bit {
         Mux(
               Mux(
                     a,
@@ -311,8 +311,8 @@ pub fn Mux4Way16(a: Word, b: Word, c: Word, d: Word, sel: [Bit; 2]) -> Word {
     ])
 }
 
-pub fn Mux8Way16(a: Word, b: Word, c: Word, d: Word, e: Word, f: Word, g: Word, h: Word, sel: [Bit; 3]) -> Word {
-    let Mux3 = |a: Bit, b: Bit, c: Bit, d: Bit, e: Bit, f: Bit, g: Bit, h: Bit, s0: Bit, s1: Bit, s2: Bit| -> Bit {
+pub fn Mux8Way16(a: Word, b: Word, c: Word, d: Word, e: Word, f: Word, g: Word, h: Word, sel: [bit; 3]) -> Word {
+    let Mux3 = |a: bit, b: bit, c: bit, d: bit, e: bit, f: bit, g: bit, h: bit, s0: bit, s1: bit, s2: bit| -> bit {
         Mux(
             Mux(
                 Mux(
@@ -365,7 +365,7 @@ pub fn Mux8Way16(a: Word, b: Word, c: Word, d: Word, e: Word, f: Word, g: Word, 
     )
 }
 
-pub fn DMux4Way(a: Bit, sel: [Bit; 2]) -> [Bit; 4] {
+pub fn DMux4Way(a: bit, sel: [bit; 2]) -> [bit; 4] {
     [
         And(
             And(
@@ -398,7 +398,7 @@ pub fn DMux4Way(a: Bit, sel: [Bit; 2]) -> [Bit; 4] {
     ]
 }
 
-pub fn DMux8Way(a: Bit, sel: [Bit; 3]) -> [Bit; 8] {
+pub fn DMux8Way(a: bit, sel: [bit; 3]) -> [bit; 8] {
     [
         And(
             And(
@@ -485,7 +485,7 @@ pub fn DMux8Way(a: Bit, sel: [Bit; 3]) -> [Bit; 8] {
 
 #[cfg(test)]
 mod tests {
-    use super::Bit::{O, I};
+    use super::bit::{O, I};
     use super::Word;
     use super::{Nand, Not, And, Or, Xor, Mux, DMux, Not16, And16, Or16, Mux16,
                 Or8Way, Mux4Way16, Mux8Way16, DMux4Way, DMux8Way, DMux16};

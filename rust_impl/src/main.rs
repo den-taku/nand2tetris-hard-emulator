@@ -3,7 +3,7 @@ mod arithmetic;
 mod sequential;
 
 use logic::*;
-use logic::Bit::{O, I};
+use logic::bit::{O, I};
 use arithmetic::*;
 use sequential::*;
 

@@ -102,6 +102,9 @@ impl Bit {
     }
 }
 
+// must use input and output both
+// when use, save input value and output one separately in variables
+// use input first
 #[derive(Debug, Copy, Clone)]
 pub struct Register {
     bits: [Bit; 16]
@@ -150,6 +153,75 @@ impl Register {
             self.bits[14].output(clock),
             self.bits[15].output(clock),
         ])
+    }
+}
+
+// must use input and output both
+// when use, save input value and output one separately in variables
+// use input first
+#[derive(Debug, Copy, Clone)]
+pub struct RAM8 {
+    registers: [Register; 8]
+}
+
+impl RAM8 {
+    pub fn new() -> Self {
+        RAM8 { registers: [Register::new(); 8]}
+    }
+
+    pub fn input(&mut self, clock: &Clock, input: Word, address: [bit; 3], load: bit) {
+        let bits = [
+            DMux8Way(input[0], address),
+            DMux8Way(input[1], address),
+            DMux8Way(input[2], address),
+            DMux8Way(input[3], address),
+            DMux8Way(input[4], address),
+            DMux8Way(input[5], address),
+            DMux8Way(input[6], address),
+            DMux8Way(input[7], address),
+            DMux8Way(input[8], address),
+            DMux8Way(input[9], address),
+            DMux8Way(input[10], address),
+            DMux8Way(input[11], address),
+            DMux8Way(input[12], address),
+            DMux8Way(input[13], address),
+            DMux8Way(input[14], address),
+            DMux8Way(input[15], address),
+        ];
+        for i in 0..8 {
+            self.registers[i].input(clock, Word::new([
+                bits[0][i],
+                bits[1][i],
+                bits[2][i],
+                bits[3][i],
+                bits[4][i],
+                bits[5][i],
+                bits[6][i],
+                bits[7][i],
+                bits[8][i],
+                bits[9][i],
+                bits[10][i],
+                bits[11][i],
+                bits[12][i],
+                bits[13][i],
+                bits[14][i],
+                bits[15][i],
+            ]), load);
+        }
+    }
+
+    pub fn output(&self, clock: &Clock, address: [bit; 3]) -> Word {
+        Mux8Way16(
+            self.registers[0].output(clock), 
+            self.registers[1].output(clock), 
+            self.registers[2].output(clock), 
+            self.registers[3].output(clock), 
+            self.registers[4].output(clock), 
+            self.registers[5].output(clock), 
+            self.registers[6].output(clock), 
+            self.registers[7].output(clock), 
+            address
+        )
     }
 }
 
@@ -254,8 +326,6 @@ mod tests {
         bit.input(&clock, I, O);
         // output new
         assert_eq!(bit.output(&clock), O);
-
-
     }
 
     #[test]
@@ -312,7 +382,94 @@ mod tests {
         register.input(&clock, word_i, O);
         // output new
         assert_eq!(register.output(&clock), word_o);
+    }
 
+    #[test]
+    fn for_ram8() {
+        // initialize as past: O, new: O
+        let mut ram8 = RAM8::new();
+        // initialize state as Tick
+        let mut clock = Clock::new();
 
+        let word_i = Word::new([I, O, I, O, I, I, O, O, O, I, O, I, O, O, I, I]);
+        let word_o = Word::new([O, I, O, I, O, O, I, I, I, O, I, O, I, I, O, O]);
+        let word_0 = Word::new([O; 16]);
+
+        // input as past: word_0, new: word_i in registers
+        ram8.input(&clock, word_i, [O, O, O], I);
+        // output past in register
+        assert_eq!(ram8.output(&clock, [O, O, O]), word_0);
+
+        // Tock
+        clock.next();
+
+        // nothing happened
+        ram8.input(&clock, word_o, [O, O, O], O);
+        // output new
+        assert_eq!(ram8.output(&clock, [O, O, O]), word_i);
+
+        // Tick
+        clock.next();
+
+        // initialize as past: I, new: I
+        ram8.input(&clock, word_o, [O, O, O], O);
+        // output past
+        assert_eq!(ram8.output(&clock, [O, O, O]), word_i);
+
+        // Tock
+        clock.next();
+
+        // nothing happened
+        ram8.input(&clock, word_o, [O, O, O], I);
+        // output new
+        assert_eq!(ram8.output(&clock, [O, O, O]), word_i);
+
+        // Tick
+        clock.next();
+
+        // initialize as past: I, new: O
+        ram8.input(&clock, word_o, [O, O, O], I);
+        // output past
+        assert_eq!(ram8.output(&clock, [O, O, O]), word_i);
+
+        // Tock
+        clock.next();
+
+        // nothing happened
+        ram8.input(&clock, word_o, [O, O, O], I);
+        // output new
+        assert_eq!(ram8.output(&clock, [O, O, O]), word_o);
+        
+        clock.next();
+
+        ram8.input(&clock, word_o, [O, O, I], I);
+        assert_eq!(ram8.output(&clock, [O, O, I]), word_0);
+
+        clock.next();
+
+        ram8.input(&clock, word_i, [O, O, I], O);
+        assert_eq!(ram8.output(&clock, [O, O, I]), word_o);
+
+        clock.next();
+
+        ram8.input(&clock, word_i, [O, O, I], O);
+        assert_eq!(ram8.output(&clock, [O, O, I]), word_o);
+
+        clock.next();
+
+        ram8.input(&clock, word_i, [O, O, I], I);
+        assert_eq!(ram8.output(&clock, [O, O, I]), word_o);
+
+        clock.next();
+
+        ram8.input(&clock, word_i, [O, O, I], I);
+        assert_eq!(ram8.output(&clock, [O, O, I]), word_o);
+
+        clock.next();
+
+        ram8.input(&clock, word_i, [O, O, I], I);
+        assert_eq!(ram8.output(&clock, [O, O, I]), word_i);
+
+        clock.next();
     }
 }

@@ -423,6 +423,81 @@ impl RAM4K {
     }
 }
 
+#[derive(Copy, Clone)]
+pub struct RAM16K {
+    rams: [RAM4K; 8]
+}
+
+// impl RAM16K {
+//     pub fn new() -> Self {
+//         RAM16K { rams: [RAM4K::new(); 8] }
+//     }
+
+//     pub fn input(&mut self, clock: &Clock, input: Word, address: [bit; 15], load: bit) {
+//         let bits = [
+//             DMux8Way(input[0], [address[11], address[12], address[13]]),
+//             DMux8Way(input[1], [address[11], address[12], address[13]]),
+//             DMux8Way(input[2], [address[11], address[12], address[13]]),
+//             DMux8Way(input[3], [address[11], address[12], address[13]]),
+//             DMux8Way(input[4], [address[11], address[12], address[13]]),
+//             DMux8Way(input[5], [address[11], address[12], address[13]]),
+//             DMux8Way(input[6], [address[11], address[12], address[13]]),
+//             DMux8Way(input[7], [address[11], address[12], address[13]]),
+//             DMux8Way(input[8], [address[11], address[12], address[13]]),
+//             DMux8Way(input[9], [address[11], address[12], address[13]]),
+//             DMux8Way(input[10], [address[11], address[12], address[13]]),
+//             DMux8Way(input[11], [address[11], address[12], address[13]]),
+//             DMux8Way(input[12], [address[11], address[12], address[13]]),
+//             DMux8Way(input[13], [address[11], address[12], address[13]]),
+//             DMux8Way(input[14], [address[11], address[12], address[13]]),
+//             DMux8Way(input[15], [address[11], address[12], address[13]]),
+//         ];
+//         for i in 0..8 {
+//             self.rams[i].input(clock, Word::new([
+//                 bits[0][i],
+//                 bits[1][i],
+//                 bits[2][i],
+//                 bits[3][i],
+//                 bits[4][i],
+//                 bits[5][i],
+//                 bits[6][i],
+//                 bits[7][i],
+//                 bits[8][i],
+//                 bits[9][i],
+//                 bits[10][i],
+//                 bits[11][i],
+//                 bits[12][i],
+//                 bits[13][i],
+//                 bits[14][i],
+//                 bits[15][i],
+//             ]), [address[0], address[1], address[2], address[3], address[4], address[5], 
+//                 address[6], address[7], address[8], address[9], address[10], address[11]], load);
+//         } 
+//     }
+
+//     pub fn output(&self, clock: &Clock, address: [bit; 14]) -> Word {
+//         Mux8Way16(
+//             self.rams[0].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], 
+//                                          address[6], address[7], address[8], address[9], address[10], address[11]]), 
+//             self.rams[1].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], 
+//                                          address[6], address[7], address[8], address[9], address[10], address[11]]), 
+//             self.rams[2].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], 
+//                                          address[6], address[7], address[8], address[9], address[10], address[11]]), 
+//             self.rams[3].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], 
+//                                          address[6], address[7], address[8], address[9], address[10], address[11]]), 
+//             self.rams[4].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], 
+//                                          address[6], address[7], address[8], address[9], address[10], address[11]]), 
+//             self.rams[5].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], 
+//                                          address[6], address[7], address[8], address[9], address[10], address[11]]), 
+//             self.rams[6].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], 
+//                                          address[6], address[7], address[8], address[9], address[10], address[11]]), 
+//             self.rams[7].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], 
+//                                          address[6], address[7], address[8], address[9], address[10], address[11]]), 
+//             [address[12], address[13], address[14]]
+//         )
+//     }
+// }
+
 #[cfg(test)]
 mod tests {
     use super::*;

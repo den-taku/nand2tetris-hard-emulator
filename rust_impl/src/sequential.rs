@@ -1,7 +1,8 @@
 #![allow(dead_code, non_snake_case)]
 
 use crate::ClockState::{Tick, Tock};
-use crate::logic::{bit, bit::O, *};
+use crate::logic::{bit, bit::{O, I}, *};
+use crate::arithmetic::Add16;
 
 // tick: input, update internal state
 // tock: output 
@@ -487,6 +488,51 @@ impl RAM16K {
                                          address[6], address[7], address[8], address[9], address[10], address[11]]), 
             [address[12], address[13]]
         )
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct PC {
+    counter: Register
+}
+
+impl PC {
+    pub fn new() -> Self {
+        PC { counter: Register::new() }
+    }
+
+    pub fn input(&mut self, clock: &Clock, input: Word, inc: bit, load: bit, reset: bit) {
+        let clock_tmp = match clock.state() {
+            Tick => {
+                let mut c = Clock::new();
+                c.next();
+                c
+            },
+            Tock => Clock::new()
+        };
+        self.counter.input(clock, 
+            Mux16(
+                Mux16(
+                    Mux16(
+                        self.output(&clock_tmp),
+                        Add16(
+                            self.output(&clock_tmp), 
+                            Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I])
+                        ),
+                        inc
+                    ),
+                    input,
+                    load
+                ),
+                Word::new([O; 16]),
+                reset
+            ),
+             I
+        );
+    }
+
+    pub fn output(&self, clock: &Clock) -> Word {
+        self.counter.output(clock)
     }
 }
 
@@ -1092,5 +1138,63 @@ mod tests {
         assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I, O, O]), word_i);
 
         clock.next();
+    }
+
+    #[test]
+    fn for_pc() {
+        let mut clock = Clock::new();
+        let mut pc = PC::new();
+
+        let word0 = Word::new([O; 16]);
+        let word1 = Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]);
+        let input = Word::new([O, O, I, O, O, I, O, O, I, O, O, I, O, O, I, O]);
+
+        pc.input(&clock, word0, I, O, O);
+        assert_eq!(pc.output(&clock), word0);
+
+        clock.next(); // Tock
+
+        pc.input(&clock, word0, I, O, O);
+        assert_eq!(pc.output(&clock), Add16(word0, word1));
+
+        clock.next(); // Tick
+
+        pc.input(&clock, word0, I, O, O);
+        assert_eq!(pc.output(&clock), Add16(word0, word1));
+
+        clock.next(); // Tock
+
+        pc.input(&clock, word0, I, O, O);
+        assert_eq!(pc.output(&clock), Add16(Add16(word0, word1), word1));
+
+        clock.next(); // Tick
+
+        pc.input(&clock, word0, O, O, I);
+        assert_eq!(pc.output(&clock), Add16(word1, word1));
+
+        clock.next(); // Tock
+
+        pc.input(&clock, input, O, I, O);
+        assert_eq!(pc.output(&clock), word0);
+
+        clock.next(); // Tick
+
+        pc.input(&clock, input, O, I, O);
+        assert_eq!(pc.output(&clock), word0);
+
+        clock.next(); // Tock
+
+        pc.input(&clock, word0, O, O, O);
+        assert_eq!(pc.output(&clock), input);
+
+        clock.next(); // Tick
+
+        pc.input(&clock, word0, O, O, O);
+        assert_eq!(pc.output(&clock), input);
+
+        clock.next(); // Tock
+
+        pc.input(&clock, word0, O, O, O);
+        assert_eq!(pc.output(&clock), input);
     }
 }

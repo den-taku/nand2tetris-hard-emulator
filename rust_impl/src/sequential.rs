@@ -303,22 +303,22 @@ impl RAM512 {
 
     pub fn input(&mut self, clock: &Clock, input: Word, address: [bit; 9], load: bit) {
         let bits = [
-            DMux8Way(input[0], [address[3], address[4], address[5]]),
-            DMux8Way(input[1], [address[3], address[4], address[5]]),
-            DMux8Way(input[2], [address[3], address[4], address[5]]),
-            DMux8Way(input[3], [address[3], address[4], address[5]]),
-            DMux8Way(input[4], [address[3], address[4], address[5]]),
-            DMux8Way(input[5], [address[3], address[4], address[5]]),
-            DMux8Way(input[6], [address[3], address[4], address[5]]),
-            DMux8Way(input[7], [address[3], address[4], address[5]]),
-            DMux8Way(input[8], [address[3], address[4], address[5]]),
-            DMux8Way(input[9], [address[3], address[4], address[5]]),
-            DMux8Way(input[10], [address[3], address[4], address[5]]),
-            DMux8Way(input[11], [address[3], address[4], address[5]]),
-            DMux8Way(input[12], [address[3], address[4], address[5]]),
-            DMux8Way(input[13], [address[3], address[4], address[5]]),
-            DMux8Way(input[14], [address[3], address[4], address[5]]),
-            DMux8Way(input[15], [address[3], address[4], address[5]]),
+            DMux8Way(input[0], [address[6], address[7], address[8]]),
+            DMux8Way(input[1], [address[6], address[7], address[8]]),
+            DMux8Way(input[2], [address[6], address[7], address[8]]),
+            DMux8Way(input[3], [address[6], address[7], address[8]]),
+            DMux8Way(input[4], [address[6], address[7], address[8]]),
+            DMux8Way(input[5], [address[6], address[7], address[8]]),
+            DMux8Way(input[6], [address[6], address[7], address[8]]),
+            DMux8Way(input[7], [address[6], address[7], address[8]]),
+            DMux8Way(input[8], [address[6], address[7], address[8]]),
+            DMux8Way(input[9], [address[6], address[7], address[8]]),
+            DMux8Way(input[10], [address[6], address[7], address[8]]),
+            DMux8Way(input[11], [address[6], address[7], address[8]]),
+            DMux8Way(input[12], [address[6], address[7], address[8]]),
+            DMux8Way(input[13], [address[6], address[7], address[8]]),
+            DMux8Way(input[14], [address[6], address[7], address[8]]),
+            DMux8Way(input[15], [address[6], address[7], address[8]]),
         ];
         for i in 0..8 {
             self.rams[i].input(clock, Word::new([
@@ -352,7 +352,73 @@ impl RAM512 {
             self.rams[5].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5]]), 
             self.rams[6].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5]]), 
             self.rams[7].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5]]), 
-            [address[3], address[4], address[5]]
+            [address[6], address[7], address[8]]
+        )
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct RAM4K {
+    rams: [RAM512; 8]
+}
+
+impl RAM4K {
+    pub fn new() -> Self {
+        RAM4K { rams: [RAM512::new(); 8] }
+    }
+
+    pub fn input(&mut self, clock: &Clock, input: Word, address: [bit; 12], load: bit) {
+        let bits = [
+            DMux8Way(input[0], [address[9], address[10], address[11]]),
+            DMux8Way(input[1], [address[9], address[10], address[11]]),
+            DMux8Way(input[2], [address[9], address[10], address[11]]),
+            DMux8Way(input[3], [address[9], address[10], address[11]]),
+            DMux8Way(input[4], [address[9], address[10], address[11]]),
+            DMux8Way(input[5], [address[9], address[10], address[11]]),
+            DMux8Way(input[6], [address[9], address[10], address[11]]),
+            DMux8Way(input[7], [address[9], address[10], address[11]]),
+            DMux8Way(input[8], [address[9], address[10], address[11]]),
+            DMux8Way(input[9], [address[9], address[10], address[11]]),
+            DMux8Way(input[10], [address[9], address[10], address[11]]),
+            DMux8Way(input[11], [address[9], address[10], address[11]]),
+            DMux8Way(input[12], [address[9], address[10], address[11]]),
+            DMux8Way(input[13], [address[9], address[10], address[11]]),
+            DMux8Way(input[14], [address[9], address[10], address[11]]),
+            DMux8Way(input[15], [address[9], address[10], address[11]]),
+        ];
+        for i in 0..8 {
+            self.rams[i].input(clock, Word::new([
+                bits[0][i],
+                bits[1][i],
+                bits[2][i],
+                bits[3][i],
+                bits[4][i],
+                bits[5][i],
+                bits[6][i],
+                bits[7][i],
+                bits[8][i],
+                bits[9][i],
+                bits[10][i],
+                bits[11][i],
+                bits[12][i],
+                bits[13][i],
+                bits[14][i],
+                bits[15][i],
+            ]), [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]], load);
+        } 
+    }
+
+    pub fn output(&self, clock: &Clock, address: [bit; 12]) -> Word {
+        Mux8Way16(
+            self.rams[0].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
+            self.rams[1].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
+            self.rams[2].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
+            self.rams[3].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
+            self.rams[4].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
+            self.rams[5].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
+            self.rams[6].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
+            self.rams[7].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
+            [address[9], address[10], address[11]]
         )
     }
 }
@@ -779,6 +845,95 @@ mod tests {
 
         ram.input(&clock, word_i, [O, O, I, O, O, I, O, O, I], I);
         assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I]), word_i);
+
+        clock.next();
+    }
+
+    #[test]
+    fn for_ram4k() {
+        // initialize as past: O, new: O
+        let mut ram = RAM4K::new();
+        // initialize state as Tick
+        let mut clock = Clock::new();
+
+        let word_i = Word::new([I, O, I, O, I, I, O, O, O, I, O, I, O, O, I, I]);
+        let word_o = Word::new([O, I, O, I, O, O, I, I, I, O, I, O, I, I, O, O]);
+        let word_0 = Word::new([O; 16]);
+
+        // input as past: word_0, new: word_i in registers
+        ram.input(&clock, word_i, [O, O, O, O, O, O, O, O, O, O, O, O], I);
+        // output past in register
+        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O]), word_0);
+
+        // Tock
+        clock.next();
+
+        // nothing happened
+        ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O], O);
+        // output new
+        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
+
+        // Tick
+        clock.next();
+
+        // initialize as past: I, new: I
+        ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O], O);
+        // output past
+        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
+
+        // Tock
+        clock.next();
+
+        // nothing happened
+        ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O], I);
+        // output new
+        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
+
+        // Tick
+        clock.next();
+
+        // initialize as past: I, new: O
+        ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O], I);
+        // output past
+        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
+
+        // Tock
+        clock.next();
+
+        // nothing happened
+        ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O], I);
+        // output new
+        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O]), word_o);
+        
+        clock.next();
+
+        ram.input(&clock, word_o, [O, O, I, O, O, I, O, O, I, O, O, I], I);
+        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I]), word_0);
+
+        clock.next();
+
+        ram.input(&clock, word_i, [O, O, I, O, O, I, O, O, I, O, O, I], O);
+        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I]), word_o);
+
+        clock.next();
+
+        ram.input(&clock, word_i, [O, O, I, O, O, I, O, O, I, O, O, I], O);
+        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I]), word_o);
+
+        clock.next();
+
+        ram.input(&clock, word_i, [O, O, I, O, O, I, O, O, I, O, O, I], I);
+        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I]), word_o);
+
+        clock.next();
+
+        ram.input(&clock, word_i, [O, O, I, O, O, I, O, O, I, O, O, I], I);
+        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I]), word_o);
+
+        clock.next();
+
+        ram.input(&clock, word_i, [O, O, I, O, O, I, O, O, I, O, O, I], I);
+        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I]), word_i);
 
         clock.next();
     }

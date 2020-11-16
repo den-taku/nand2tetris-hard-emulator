@@ -5,6 +5,16 @@
 @R2
 M=0
 
+@R0
+D=M
+@END
+D;JEQ
+
+@R1
+D=M
+@END
+D;JEQ
+
 (LOOP)
     @R0
     D=M

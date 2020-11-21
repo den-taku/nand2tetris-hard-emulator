@@ -29,3 +29,38 @@ pub struct Memory {
 pub struct Computer {
     //
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn for_cpu() {
+        unimplemented!()
+    }
+
+    #[test]
+    fn for_computer() {
+        unimplemented!()
+    }
+
+    #[test]
+    fn for_keyboard() {
+        unimplemented!()
+    }
+
+    #[test]
+    fn for_memory() {
+        unimplemented!()
+    }
+
+    #[test]
+    fn for_rom32k() {
+        unimplemented!()
+    }
+
+    #[test]
+    fn for_screen() {
+        unimplemented!()
+    }
+}

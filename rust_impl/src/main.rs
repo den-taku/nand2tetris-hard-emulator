@@ -1,6 +1,9 @@
+#![allow(unused_imports)]
+
 mod logic;
 mod arithmetic;
 mod sequential;
+mod architecture;
 
 use logic::*;
 use logic::bit::{O, I};

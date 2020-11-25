@@ -76,6 +76,7 @@ impl Screen {
                                                                address[6], address[7], address[8], address[9], address[10], address[11]]);
         let output2 = self.rams[1].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5],
                                                                 address[6], address[7], address[8], address[9], address[10], address[11]]);
+        // Draw screen
         Word::new([
             Mux(output1[0], output2[0], address[12]),
             Mux(output1[1], output2[1], address[12]),

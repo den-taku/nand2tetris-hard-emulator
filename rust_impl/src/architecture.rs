@@ -1,9 +1,10 @@
 #![allow(dead_code, non_snake_case)]
 
 use crate::logic::Word;
+use crate::logic::{bit, DMux, Mux};
 use crate::logic::bit::{I, O};
 use crate::sequential::ClockState::{Tick, Tock};
-use crate::sequential::Clock;
+use crate::sequential::{Clock, RAM4K};
 
 use std::io;
 use std::io::prelude::*;
@@ -18,8 +19,82 @@ pub struct ROM32K {
     //
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct Screen {
+    rams: [RAM4K; 2]
+}
+
+impl Screen {
+    pub fn new() -> Self {
+        Screen { rams: [RAM4K::new(); 2] }
+    }
+
+    pub fn input(&mut self, clock: &Clock, input: Word, address: [bit; 13], load: bit) {
+        let bits = [
+            DMux(input[0], address[12]),
+            DMux(input[1], address[12]),
+            DMux(input[2], address[12]),
+            DMux(input[3], address[12]),
+            DMux(input[4], address[12]),
+            DMux(input[5], address[12]),
+            DMux(input[6], address[12]),
+            DMux(input[7], address[12]),
+            DMux(input[8], address[12]),
+            DMux(input[9], address[12]),
+            DMux(input[10], address[12]),
+            DMux(input[11], address[12]),
+            DMux(input[12], address[12]),
+            DMux(input[13], address[12]),
+            DMux(input[14], address[12]),
+            DMux(input[15], address[12]),
+        ];
+        for i in 0..2 {
+            self.rams[i].input(clock, Word::new([
+                bits[0][i],
+                bits[1][i],
+                bits[2][i],
+                bits[3][i],
+                bits[4][i],
+                bits[5][i],
+                bits[6][i],
+                bits[7][i],
+                bits[8][i],
+                bits[9][i],
+                bits[10][i],
+                bits[11][i],
+                bits[12][i],
+                bits[13][i],
+                bits[14][i],
+                bits[15][i],
+            ]), [address[0], address[1], address[2], address[3], address[4], address[5],
+                        address[6], address[7], address[8], address[9], address[10], address[11]], load)
+        }
+    }
+
+    pub fn output(&self, clock: &Clock, address: [bit; 13]) -> Word {
+        let output1 = self.rams[0].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5],
+                                                               address[6], address[7], address[8], address[9], address[10], address[11]]);
+        let output2 = self.rams[1].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5],
+                                                                address[6], address[7], address[8], address[9], address[10], address[11]]);
+        Word::new([
+            Mux(output1[0], output2[0], address[12]),
+            Mux(output1[1], output2[1], address[12]),
+            Mux(output1[2], output2[2], address[12]),
+            Mux(output1[3], output2[3], address[12]),
+            Mux(output1[4], output2[4], address[12]),
+            Mux(output1[5], output2[5], address[12]),
+            Mux(output1[6], output2[6], address[12]),
+            Mux(output1[7], output2[7], address[12]),
+            Mux(output1[8], output2[8], address[12]),
+            Mux(output1[9], output2[9], address[12]),
+            Mux(output1[10], output2[10], address[12]),
+            Mux(output1[11], output2[11], address[12]),
+            Mux(output1[12], output2[12], address[12]),
+            Mux(output1[13], output2[13], address[12]),
+            Mux(output1[14], output2[14], address[12]),
+            Mux(output1[15], output2[15], address[12]),
+        ])
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -28,6 +103,10 @@ pub struct Keyboard {
 }
 
 impl Keyboard {
+    pub fn new() -> Self {
+        Keyboard { word: Word::new([O; 16])}
+    }
+
     // This function work only when Tick start
     pub fn input(&mut self, clock: &Clock) {
         if clock.state() == Tick {
@@ -311,6 +390,90 @@ mod tests {
 
     #[test]
     fn for_screen() {
-        unimplemented!()
+        // initialize as past: O, new: O
+        let mut ram = Screen::new();
+        // initialize state as Tick
+        let mut clock = Clock::new();
+
+        let word_i = Word::new([I, O, I, O, I, I, O, O, O, I, O, I, O, O, I, I]);
+        let word_o = Word::new([O, I, O, I, O, O, I, I, I, O, I, O, I, I, O, O]);
+        let word_0 = Word::new([O; 16]);
+
+        // input as past: word_0, new: word_i in registers
+        ram.input(&clock, word_i, [O, O, O, O, O, O, O, O, O, O, O, O, O], I);
+        // output past in register
+        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]), word_0);
+
+        // Tock
+        clock.next();
+
+        // nothing happened
+        ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O], O);
+        // output new
+        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
+
+        // Tick
+        clock.next();
+
+        // initialize as past: I, new: I
+        ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O], O);
+        // output past
+        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
+
+        // Tock
+        clock.next();
+
+        // nothing happened
+        ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O], I);
+        // output new
+        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
+
+        // Tick
+        clock.next();
+
+        // initialize as past: I, new: O
+        ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O], I);
+        // output past
+        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
+
+        // Tock
+        clock.next();
+
+        // nothing happened
+        ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O], I);
+        // output new
+        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]), word_o);
+        
+        clock.next();
+
+        ram.input(&clock, word_o, [O, O, I, O, O, I, O, O, I, O, O, I, O], I);
+        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I, O]), word_0);
+
+        clock.next();
+
+        ram.input(&clock, word_i, [O, O, I, O, O, I, O, O, I, O, O, I, O], O);
+        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I, O]), word_o);
+
+        clock.next();
+
+        ram.input(&clock, word_i, [O, O, I, O, O, I, O, O, I, O, O, I, O], O);
+        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I, O]), word_o);
+
+        clock.next();
+
+        ram.input(&clock, word_i, [O, O, I, O, O, I, O, O, I, O, O, I, O], I);
+        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I, O]), word_o);
+
+        clock.next();
+
+        ram.input(&clock, word_i, [O, O, I, O, O, I, O, O, I, O, O, I, O], I);
+        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I, O]), word_o);
+
+        clock.next();
+
+        ram.input(&clock, word_i, [O, O, I, O, O, I, O, O, I, O, O, I, O], I);
+        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I, O]), word_i);
+
+        clock.next();
     }
 }

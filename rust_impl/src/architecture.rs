@@ -20,7 +20,6 @@ pub struct ROM32K {
 
 #[derive(Debug, Copy, Clone)]
 pub struct Screen {
-    //
 }
 
 #[derive(Debug, Copy, Clone)]

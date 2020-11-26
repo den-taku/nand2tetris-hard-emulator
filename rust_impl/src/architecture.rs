@@ -12,11 +12,18 @@ use std::io::prelude::*;
 #[derive(Debug, Copy, Clone)]
 pub struct CPU {
     a_register: Register,
-    d_ragister: Register,
+    d_register: Register,
     pc: PC
 }
 
 impl CPU {
+    pub fn new() -> Self {
+        CPU {
+            a_register: Register::new(),
+            d_register: Register::new(),
+            pc: PC::new()
+        }
+    }
     fn decode(instruction: Word) -> (bit, [bit; 2], bit, [bit; 6], [bit; 3], [bit; 3]) {
         (
             instruction[0],

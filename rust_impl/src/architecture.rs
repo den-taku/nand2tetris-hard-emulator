@@ -4,14 +4,29 @@ use crate::logic::Word;
 use crate::logic::{bit, DMux, Mux, And, Not, Mux4Way16};
 use crate::logic::bit::{I, O};
 use crate::sequential::ClockState::{Tick, Tock};
-use crate::sequential::{Clock, RAM4K, RAM16K};
+use crate::sequential::{Clock, RAM4K, RAM16K, Register, PC};
 
 use std::io;
 use std::io::prelude::*;
 
 #[derive(Debug, Copy, Clone)]
 pub struct CPU {
-    // 
+    a_register: Register,
+    d_ragister: Register,
+    pc: PC
+}
+
+impl CPU {
+    fn decode(instruction: Word) -> (bit, [bit; 2], bit, [bit; 6], [bit; 3], [bit; 3]) {
+        (
+            instruction[0],
+            [instruction[1], instruction[2]],
+            instruction[3],
+            [instruction[4], instruction[5], instruction[6], instruction[7], instruction[8], instruction[9]],
+            [instruction[10], instruction[11], instruction[12]],
+            [instruction[13], instruction[14], instruction[15]]
+        )
+    }
 }
 
 #[derive(Debug, Copy, Clone)]

@@ -24,6 +24,13 @@ impl CPU {
             pc: PC::new()
         }
     }
+    fn input(&mut self, clock: &Clock, inM: Word, instruction: Word, reset: bit) {
+        let (i, xx, a, cccccc, ddd, jjj) = CPU::decode(instruction);
+        unimplemented!()
+    }
+    fn output(&self, clock: &Clock) -> (Word, bit, [bit; 15], [bit; 15]) {
+        unimplemented!()
+    }
     fn decode(instruction: Word) -> (bit, [bit; 2], bit, [bit; 6], [bit; 3], [bit; 3]) {
         (
             instruction[0],

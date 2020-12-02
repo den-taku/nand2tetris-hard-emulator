@@ -1,7 +1,7 @@
 #![allow(dead_code, non_snake_case)]
 
 use crate::logic::Word;
-use crate::logic::{bit, DMux, Mux, And, Not, Or, Mux4Way16, Mux16};
+use crate::logic::{bit, DMux, Mux, And, Not, Or, Mux4Way16, Mux16, Mux8Way16};
 use crate::logic::bit::{I, O};
 use crate::arithmetic::ALU;
 use crate::sequential::ClockState::{Tick, Tock};
@@ -149,9 +149,32 @@ impl CPU {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct ROM32K {
-    //
+    rams: [RAM4K; 8]
+}
+
+impl ROM32K {
+    // This needs for inner implementation
+    pub fn input(&mut self, clock: &Clock) {
+        for i in 0..8 {
+            self.rams[i].input(clock, Word::new([O; 16]), [O; 12], O);
+        }
+    }
+
+    pub fn putput(&self, clock: &Clock, address: [bit; 15]) -> Word {
+        Mux8Way16(
+            self.rams[0].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
+            self.rams[1].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
+            self.rams[2].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
+            self.rams[3].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
+            self.rams[4].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
+            self.rams[5].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
+            self.rams[6].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
+            self.rams[7].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
+            [address[12], address[13], address[14]]
+        )
+    }
 }
 
 #[derive(Copy, Clone)]

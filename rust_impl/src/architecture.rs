@@ -1,14 +1,16 @@
 #![allow(dead_code, non_snake_case)]
 
 use crate::logic::Word;
-use crate::logic::{bit, DMux, Mux, And, Not, Or, Mux4Way16, Mux16, Mux8Way16};
+use crate::logic::{bit, DMux, Mux, And, Not, Or, Mux4Way16, Mux16, Mux8Way16, DMux8Way};
 use crate::logic::bit::{I, O};
 use crate::arithmetic::ALU;
 use crate::sequential::ClockState::{Tick, Tock};
 use crate::sequential::{Clock, RAM4K, RAM16K, Register, PC};
 
 use std::io;
+use std::io::BufReader;
 use std::io::prelude::*;
+use std::fs::File;
 
 #[derive(Debug, Copy, Clone)]
 pub struct CPU {
@@ -155,10 +157,57 @@ pub struct ROM32K {
 }
 
 impl ROM32K {
+    pub fn new() -> Self {
+        ROM32K {
+            rams: [RAM4K::new(); 8]
+        }
+    }
     // This needs for inner implementation
     pub fn input(&mut self, clock: &Clock) {
         for i in 0..8 {
             self.rams[i].input(clock, Word::new([O; 16]), [O; 12], O);
+        }
+    }
+
+    fn input_inner(&mut self, clock: &Clock, input: Word, address: [bit; 15]) {
+        let bits = [
+            DMux8Way(input[0], [address[12], address[13], address[14]]),
+            DMux8Way(input[1], [address[12], address[13], address[14]]),
+            DMux8Way(input[2], [address[12], address[13], address[14]]),
+            DMux8Way(input[3], [address[12], address[13], address[14]]),
+            DMux8Way(input[4], [address[12], address[13], address[14]]),
+            DMux8Way(input[5], [address[12], address[13], address[14]]),
+            DMux8Way(input[6], [address[12], address[13], address[14]]),
+            DMux8Way(input[7], [address[12], address[13], address[14]]),
+            DMux8Way(input[8], [address[12], address[13], address[14]]),
+            DMux8Way(input[9], [address[12], address[13], address[14]]),
+            DMux8Way(input[10], [address[12], address[13], address[14]]),
+            DMux8Way(input[11], [address[12], address[13], address[14]]),
+            DMux8Way(input[12], [address[12], address[13], address[14]]),
+            DMux8Way(input[13], [address[12], address[13], address[14]]),
+            DMux8Way(input[14], [address[12], address[13], address[14]]),
+            DMux8Way(input[15], [address[12], address[13], address[14]]),
+        ];
+        for i in 0..8 {
+            self.rams[i].input(clock, Word::new([
+                bits[0][i],
+                bits[1][i],
+                bits[2][i],
+                bits[3][i],
+                bits[4][i],
+                bits[5][i],
+                bits[6][i],
+                bits[7][i],
+                bits[8][i],
+                bits[9][i],
+                bits[10][i],
+                bits[11][i],
+                bits[12][i],
+                bits[13][i],
+                bits[14][i],
+                bits[15][i],
+            ]), [address[0], address[1], address[2], address[3], address[4], address[5],
+                        address[6], address[7], address[8], address[9], address[10], address[11]], I)
         }
     }
 
@@ -174,6 +223,16 @@ impl ROM32K {
             self.rams[7].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
             [address[12], address[13], address[14]]
         )
+    }
+
+    pub fn load(&mut self, filename: &str) {
+        let file = File::open(filename.clone()).expect(&format!("Fail to open {}", filename));
+        let mut clock = Clock::new();
+        let mut counter = Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
+        for line_result in BufReader::new(file).lines() {
+            let line = line_result.expect("file reading error");
+            //
+        }
     }
 }
 
@@ -771,7 +830,8 @@ mod tests {
 
     #[test]
     fn for_rom32k() {
-        unimplemented!()
+        let mut rom = ROM32K::new();
+        rom.load("test.txt");
     }
 
     #[test]

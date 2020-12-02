@@ -1,8 +1,9 @@
 #![allow(dead_code, non_snake_case)]
 
 use crate::logic::Word;
-use crate::logic::{bit, DMux, Mux, And, Not, Mux4Way16};
+use crate::logic::{bit, DMux, Mux, And, Not, Or, Mux4Way16, Mux16};
 use crate::logic::bit::{I, O};
+use crate::arithmetic::ALU;
 use crate::sequential::ClockState::{Tick, Tock};
 use crate::sequential::{Clock, RAM4K, RAM16K, Register, PC};
 
@@ -13,6 +14,8 @@ use std::io::prelude::*;
 pub struct CPU {
     a_register: Register,
     d_register: Register,
+    outM: Register,
+    write_dst: Register,
     pc: PC
 }
 
@@ -21,15 +24,114 @@ impl CPU {
         CPU {
             a_register: Register::new(),
             d_register: Register::new(),
+            outM: Register::new(),
+            write_dst: Register::new(),
             pc: PC::new()
         }
     }
     fn input(&mut self, clock: &Clock, inM: Word, instruction: Word, reset: bit) {
-        let (i, xx, a, cccccc, ddd, jjj) = CPU::decode(instruction);
-        unimplemented!()
+        let (i, _xx, a, cccccc, ddd, jjj) = CPU::decode(instruction);
+
+        // When C instruction inputed, work
+        // let word_a = Mux16(self.a_register.output(clock), inM, a);
+        let alu = ALU(
+            self.d_register.output(clock), 
+            Mux16(
+                self.a_register.output(clock),
+                inM,
+                a
+                ),
+            cccccc[0],
+            cccccc[1],
+            cccccc[2],
+            cccccc[3],
+             cccccc[4],
+            cccccc[5]
+            );
+        let zr = alu.1;
+        let ng = alu.2;
+        let ps = Not(Or(zr, ng));
+        self.outM.input(clock, alu.0, And(ddd[1], i));
+        self.d_register.input(clock, alu.0, And(ddd[2], i));
+
+        let jump_flag = Or(
+            Or(
+                And(
+                    jjj[0],
+                    ng
+                ),
+                And(
+                    jjj[1],
+                    zr
+                )
+            ),
+            And(
+                jjj[2],
+                ps
+            )
+        );
+        self.pc.input(
+            clock, 
+            self.a_register.output(clock), 
+            I, 
+            jump_flag, 
+            reset
+        );
+        let writeM = ddd[1];
+        let mut write_dest = self.a_register.output(clock);
+        write_dest[0] = writeM;
+        self.write_dst.input(clock, write_dest, I);
+
+        // When A instruction inputed, load
+        self.a_register.input(
+            clock, 
+            Mux16(
+                instruction, 
+                alu.0,
+                i
+            ),
+            Or(Not(i), ddd[0])
+        );
     }
     fn output(&self, clock: &Clock) -> (Word, bit, [bit; 15], [bit; 15]) {
-        unimplemented!()
+        let write_dest = self.write_dst.output(clock);
+        let writeM = write_dest[0];
+        let addressM = [
+            write_dest[1],
+            write_dest[2],
+            write_dest[3],
+            write_dest[4],
+            write_dest[5],
+            write_dest[6],
+            write_dest[7],
+            write_dest[8],
+            write_dest[9],
+            write_dest[10],
+            write_dest[11],
+            write_dest[12],
+            write_dest[13],
+            write_dest[14],
+            write_dest[15],
+        ];
+        let pc = self.pc.output(clock);
+        let count = [
+            pc[1],
+            pc[2],
+            pc[3],
+            pc[4],
+            pc[5],
+            pc[6],
+            pc[7],
+            pc[8],
+            pc[9],
+            pc[10],
+            pc[11],
+            pc[12],
+            pc[13],
+            pc[14],
+            pc[15],
+        ];
+        (self.outM.output(clock), writeM, addressM, count)
     }
     fn decode(instruction: Word) -> (bit, [bit; 2], bit, [bit; 6], [bit; 3], [bit; 3]) {
         (

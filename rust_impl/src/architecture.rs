@@ -3,7 +3,7 @@
 use crate::logic::Word;
 use crate::logic::{bit, DMux, Mux, And, Not, Or, Mux4Way16, Mux16, Mux8Way16, DMux8Way};
 use crate::logic::bit::{I, O};
-use crate::arithmetic::ALU;
+use crate::arithmetic::{ALU, Add16};
 use crate::sequential::ClockState::{Tick, Tock};
 use crate::sequential::{Clock, RAM4K, RAM16K, Register, PC};
 
@@ -211,7 +211,7 @@ impl ROM32K {
         }
     }
 
-    pub fn putput(&self, clock: &Clock, address: [bit; 15]) -> Word {
+    pub fn output(&self, clock: &Clock, address: [bit; 15]) -> Word {
         Mux8Way16(
             self.rams[0].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
             self.rams[1].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
@@ -231,7 +231,34 @@ impl ROM32K {
         let mut counter = Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
         for line_result in BufReader::new(file).lines() {
             let line = line_result.expect("file reading error");
-            //
+            let instruction = Word::from(line);
+            let address = [
+                counter[1],
+                counter[2],
+                counter[3],
+                counter[4],
+                counter[5],
+                counter[6],
+                counter[7],
+                counter[8],
+                counter[9],
+                counter[10],
+                counter[11],
+                counter[12],
+                counter[13],
+                counter[14],
+                counter[15],
+            ];
+            self.input_inner(&clock, instruction, address);
+            self.output(&clock, address);
+            clock.next();
+            self.input(&clock);
+            self.output(&clock, address);
+            clock.next();
+            counter = Add16(
+                counter,
+                Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I])
+            )
         }
     }
 }
@@ -832,6 +859,31 @@ mod tests {
     fn for_rom32k() {
         let mut rom = ROM32K::new();
         rom.load("test.txt");
+        // let mut clock = Clock::new();
+
+        // rom.input(&clock);
+        // assert_eq!(
+        //     rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]),
+        //     Word::new([O, O, O, O, O, O, O, O, I, I, I, I, O, O, O, O]) 
+        // );
+        // clock.next();
+        // rom.input(&clock);
+        // assert_eq!(
+        //     rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]),
+        //     Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O])
+        // );
+        // clock.next();
+        // rom.input(&clock);
+        // assert_eq!(
+        //     rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]),
+        //     Word::new([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I])
+        // );
+        // clock.next();
+        // rom.input(&clock);
+        // assert_eq!(
+        //     rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]),
+        //     Word::new([O, O, O, O, O, O, O, O, I, I, I, I, O, O, O, O])
+        // );
     }
 
     #[test]

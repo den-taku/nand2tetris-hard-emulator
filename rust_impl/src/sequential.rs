@@ -227,7 +227,7 @@ impl RAM8 {
 }
 
 #[derive(Copy, Clone)]
-struct RAM64 {
+pub struct RAM64 {
     rams: [RAM8; 8]
 }
 

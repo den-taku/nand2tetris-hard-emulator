@@ -13,6 +13,8 @@ use sequential::*;
 use sequential::ClockState::{Tick, Tock};
 
 fn main() {
+    let mut rom = ROM32K::new();
+    rom.load("test.txt");
     
     // initialize as past: O, new: O
     let mut ram = Memory::new();

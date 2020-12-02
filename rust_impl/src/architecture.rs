@@ -29,7 +29,7 @@ impl CPU {
             pc: PC::new()
         }
     }
-    fn input(&mut self, clock: &Clock, inM: Word, instruction: Word, reset: bit) {
+    pub fn input(&mut self, clock: &Clock, inM: Word, instruction: Word, reset: bit) {
         let (i, _xx, a, cccccc, ddd, jjj) = CPU::decode(instruction);
 
         // When C instruction inputed, work
@@ -51,7 +51,7 @@ impl CPU {
         let zr = alu.1;
         let ng = alu.2;
         let ps = Not(Or(zr, ng));
-        self.outM.input(clock, alu.0, And(ddd[1], i));
+        self.outM.input(clock, alu.0, i);
         self.d_register.input(clock, alu.0, And(ddd[2], i));
 
         let jump_flag = Or(
@@ -77,10 +77,6 @@ impl CPU {
             jump_flag, 
             reset
         );
-        let writeM = ddd[1];
-        let mut write_dest = self.a_register.output(clock);
-        write_dest[0] = writeM;
-        self.write_dst.input(clock, write_dest, I);
 
         // When A instruction inputed, load
         self.a_register.input(
@@ -92,8 +88,16 @@ impl CPU {
             ),
             Or(Not(i), ddd[0])
         );
+
+        let writeM = And(ddd[1], i);
+        let mut write_dest = self.a_register.output(clock);
+        write_dest[0] = writeM;
+        self.write_dst.input(clock, write_dest, i);
+        let mut new_clock = Clock::new();
+        new_clock.next();
     }
-    fn output(&self, clock: &Clock) -> (Word, bit, [bit; 15], [bit; 15]) {
+
+    pub fn output(&self, clock: &Clock) -> (Word, bit, [bit; 15], [bit; 15]) {
         let write_dest = self.write_dst.output(clock);
         let writeM = write_dest[0];
         let addressM = [
@@ -531,7 +535,94 @@ mod tests {
 
     #[test]
     fn for_cpu() {
-        unimplemented!()
+        let mut clock = Clock::new();
+        let mut cpu = CPU::new();
+
+        let word0 = Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
+        let word1 = Word::new([I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I]);
+
+        // CLOCK: TICK
+        cpu.input(&clock, word0, Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]), O);
+        let (_outM, writeM, addressM, pc) = cpu.output(&clock);
+        // assert_eq!(outM, word0);
+        assert_eq!(writeM, O);
+        assert_eq!(addressM, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
+        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
+
+        clock.next();
+
+        // CLOCK: TOCK
+        cpu.input(&clock, word0, Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]), O);
+        let (_outM, writeM, addressM, pc) = cpu.output(&clock);
+        // assert_eq!(outM, word0);
+        assert_eq!(writeM, O);
+        assert_eq!(addressM, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]); 
+        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]);
+        assert_eq!(cpu.a_register.output(&clock), Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]));
+
+        clock.next(); 
+
+        // CLOCK: TICK
+        cpu.input(&clock, word0, Word::new([I, I, I, O, I, I, O, O, O, O, O, I, O, O, O, O]), O);
+        let (_outM, writeM, addressM, pc) = cpu.output(&clock);
+        // assert_eq!(outM, word0);
+        assert_eq!(writeM, O);
+        assert_eq!(addressM, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
+        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]);
+        assert_eq!(cpu.a_register.output(&clock), Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]));
+
+        clock.next();
+
+        // CLOCK: TOCK
+        cpu.input(&clock, word0, Word::new([I, I, I, O, I, I, O, O, O, O, O, I, O, O, O, O]), O);
+        let (_outM, writeM, addressM, pc) = cpu.output(&clock);
+        // assert_eq!(outM, word0);
+        assert_eq!(writeM, I);
+        assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]); // 12345
+        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]); 
+
+        clock.next(); 
+
+        // CLOCK: TICK
+        cpu.input(&clock, word0, Word::new([I, I, I, O, I, I, O, O, O, O, O, I, O, O, O, O]), O);
+        let (_outM, writeM, addressM, pc) = cpu.output(&clock);
+        // assert_eq!(outM, word0);
+        assert_eq!(writeM, I);
+        assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]);
+        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]);
+        assert_eq!(cpu.a_register.output(&clock), Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]));
+
+        clock.next();
+
+        // CLOCK: TOCK
+        cpu.input(&clock, word0, Word::new([I, I, I, O, I, I, O, O, O, O, O, I, O, O, O, O]), O);
+        let (_outM, writeM, addressM, pc) = cpu.output(&clock);
+        // assert_eq!(outM, word0);
+        assert_eq!(writeM, I);
+        assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]); // 12345
+        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]); 
+
+        clock.next(); 
+
+        // CLOCK: TICK
+        cpu.input(&clock, word1, Word::new([I, I, I, I, O, I, O, O, I, I, O, I, O, O, O, O]), O);
+        let (_outM, writeM, addressM, pc) = cpu.output(&clock);
+        // assert_eq!(outM, word0);
+        assert_eq!(writeM, I);
+        assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]);
+        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]);
+        assert_eq!(cpu.a_register.output(&clock), Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]));
+
+        clock.next();
+
+        // CLOCK: TOCK
+        cpu.input(&clock, word0, Word::new([I, I, I, O, I, I, O, O, O, O, O, I, O, O, O, O]), O);
+        let (outM, writeM, addressM, pc) = cpu.output(&clock);
+        assert_eq!(outM, Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]));
+        assert_eq!(writeM, I);
+        assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]); // 12345
+        assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, I, O, O]);
+
     }
 
     #[test]

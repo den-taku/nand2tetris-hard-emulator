@@ -13,6 +13,7 @@ use sequential::*;
 use sequential::ClockState::{Tick, Tock};
 
 fn main() {
+    
     // initialize as past: O, new: O
     let mut ram = Memory::new();
     // initialize state as Tick

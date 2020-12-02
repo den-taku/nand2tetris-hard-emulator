@@ -4,6 +4,7 @@ use crate::bit::{O, I};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::ops::{Index, IndexMut};
+use std::convert::From;
 
 // O -> 0, I -> 1
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -78,6 +79,56 @@ impl IndexMut<usize> for Word {
             panic!(format!("index_mut fail: {} is out of range.", index));
         }
         self.0.index_mut(index)
+    }
+}
+
+impl From<String> for Word {
+    fn from(mut s: String) -> Self {
+        s = s.split_terminator(' ').collect();
+        let mut instruction = Word::new([O; 16]);
+        let mut i = 0usize;
+        for bytes in s.bytes() {
+            instruction[i] = match bytes {
+                48 => O,
+                49 => I,
+                _ => panic!("`Word::from_string` fail: canot find 0 or 1.")
+            };
+            i = if i == 16 {
+                panic!("`Word::from_string` fail: need less than 16.")
+            } else {
+                i + 1
+            };
+        }
+        if i == 16 {
+            instruction
+        } else {
+            panic!("`Word::from_string` fail: need more than 15")
+        }
+    }
+}
+
+impl From<&str> for Word {
+    fn from(s: &str) -> Self {
+        let s: String = s.split_terminator(' ').collect();
+        let mut instruction = Word::new([O; 16]);
+        let mut i = 0usize;
+        for bytes in s.bytes() {
+            instruction[i] = match bytes {
+                48 => O,
+                49 => I,
+                _ => panic!("`Word::from_string` fail: canot find 0 or 1.")
+            };
+            i = if i == 16 {
+                panic!("`Word::from_string` fail: need less than 16.")
+            } else {
+                i + 1
+            };
+        }
+        if i == 16 {
+            instruction
+        } else {
+            panic!("`Word::from_string` fail: need more than 15")
+        }
     }
 }
 
@@ -928,5 +979,17 @@ mod tests {
                 Word([O, I, O, I, O, I, O, I, O, I, O, I, O, I, O, I])
             ]
         );
+    }
+
+    #[test]
+    fn for_from_string() {
+        assert_eq!(
+            Word::from("0000 1111 0000 1111"),
+            Word::new([O, O, O, O, I, I, I, I, O, O, O, O, I, I, I, I])
+        );
+        assert_eq!(
+            Word::from("0000 1111 0000 1111".to_string()),
+            Word::new([O, O, O, O, I, I, I, I, O, O, O, O, I, I, I, I])
+        )
     }
 }

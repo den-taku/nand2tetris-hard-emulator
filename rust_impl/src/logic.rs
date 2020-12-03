@@ -29,10 +29,12 @@ where
     T: PrimInt + FromPrimitive
 {
     fn from(value: T) -> Self {
-        match Ok(value) {
-            T::from_i32(1) => I,
-            T::from_i32(0) => O,
-            _ => panic!("bit needs 0 or 1")
+        if value == T::from_i32(0).unwrap() {
+            O
+        } else if value == T::from_i32(1).unwrap() {
+            I
+        } else {
+            panic!("bit needs 0 or 1.")
         }
     }
 }

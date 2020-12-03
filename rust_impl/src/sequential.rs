@@ -297,15 +297,15 @@ impl RAM64 {
 
     pub fn output(&self, clock: &Clock, address: [bit; 6]) -> Word {
         Mux8Way16(
-            self.rams[0].output(clock, [address[0], address[1], address[2]]), 
-            self.rams[1].output(clock, [address[0], address[1], address[2]]), 
-            self.rams[2].output(clock, [address[0], address[1], address[2]]), 
-            self.rams[3].output(clock, [address[0], address[1], address[2]]), 
-            self.rams[4].output(clock, [address[0], address[1], address[2]]), 
-            self.rams[5].output(clock, [address[0], address[1], address[2]]), 
-            self.rams[6].output(clock, [address[0], address[1], address[2]]), 
-            self.rams[7].output(clock, [address[0], address[1], address[2]]), 
-            [address[3], address[4], address[5]]
+            self.rams[0].output(clock, [address[3], address[4], address[5]]), 
+            self.rams[1].output(clock, [address[3], address[4], address[5]]), 
+            self.rams[2].output(clock, [address[3], address[4], address[5]]), 
+            self.rams[3].output(clock, [address[3], address[4], address[5]]), 
+            self.rams[4].output(clock, [address[3], address[4], address[5]]), 
+            self.rams[5].output(clock, [address[3], address[4], address[5]]), 
+            self.rams[6].output(clock, [address[3], address[4], address[5]]), 
+            self.rams[7].output(clock, [address[3], address[4], address[5]]), 
+            [address[0], address[1], address[2]]
         )
     }
 }
@@ -471,45 +471,50 @@ impl RAM16K {
     }
 
     pub fn input(&mut self, clock: &Clock, input: Word, address: [bit; 14], load: bit) {
-        let bits = [
-            DMux4Way(input[0], [address[12], address[13]]),
-            DMux4Way(input[1], [address[12], address[13]]),
-            DMux4Way(input[2], [address[12], address[13]]),
-            DMux4Way(input[3], [address[12], address[13]]),
-            DMux4Way(input[4], [address[12], address[13]]),
-            DMux4Way(input[5], [address[12], address[13]]),
-            DMux4Way(input[6], [address[12], address[13]]),
-            DMux4Way(input[7], [address[12], address[13]]),
-            DMux4Way(input[8], [address[12], address[13]]),
-            DMux4Way(input[9], [address[12], address[13]]),
-            DMux4Way(input[10], [address[12], address[13]]),
-            DMux4Way(input[11], [address[12], address[13]]),
-            DMux4Way(input[12], [address[12], address[13]]),
-            DMux4Way(input[13], [address[12], address[13]]),
-            DMux4Way(input[14], [address[12], address[13]]),
-            DMux4Way(input[15], [address[12], address[13]]),
-        ];
-        for i in 0..4 {
-            self.rams[i].input(clock, Word::new([
-                bits[0][i],
-                bits[1][i],
-                bits[2][i],
-                bits[3][i],
-                bits[4][i],
-                bits[5][i],
-                bits[6][i],
-                bits[7][i],
-                bits[8][i],
-                bits[9][i],
-                bits[10][i],
-                bits[11][i],
-                bits[12][i],
-                bits[13][i],
-                bits[14][i],
-                bits[15][i],
-            ]), [address[0], address[1], address[2], address[3], address[4], address[5], 
-                address[6], address[7], address[8], address[9], address[10], address[11]], load);
-        } 
+        let bits = DMux4Way(load, [address[0], address[1]]);
+        self.rams[0].input(clock, input, [address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13]], bits[0]);
+        self.rams[1].input(clock, input, [address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13]], bits[1]);
+        self.rams[2].input(clock, input, [address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13]], bits[2]);
+        self.rams[3].input(clock, input, [address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13]], bits[3]);
+        // let bits = [
+        //     DMux4Way(input[0], [address[12], address[13]]),
+        //     DMux4Way(input[1], [address[12], address[13]]),
+        //     DMux4Way(input[2], [address[12], address[13]]),
+        //     DMux4Way(input[3], [address[12], address[13]]),
+        //     DMux4Way(input[4], [address[12], address[13]]),
+        //     DMux4Way(input[5], [address[12], address[13]]),
+        //     DMux4Way(input[6], [address[12], address[13]]),
+        //     DMux4Way(input[7], [address[12], address[13]]),
+        //     DMux4Way(input[8], [address[12], address[13]]),
+        //     DMux4Way(input[9], [address[12], address[13]]),
+        //     DMux4Way(input[10], [address[12], address[13]]),
+        //     DMux4Way(input[11], [address[12], address[13]]),
+        //     DMux4Way(input[12], [address[12], address[13]]),
+        //     DMux4Way(input[13], [address[12], address[13]]),
+        //     DMux4Way(input[14], [address[12], address[13]]),
+        //     DMux4Way(input[15], [address[12], address[13]]),
+        // ];
+        // for i in 0..4 {
+        //     self.rams[i].input(clock, Word::new([
+        //         bits[0][i],
+        //         bits[1][i],
+        //         bits[2][i],
+        //         bits[3][i],
+        //         bits[4][i],
+        //         bits[5][i],
+        //         bits[6][i],
+        //         bits[7][i],
+        //         bits[8][i],
+        //         bits[9][i],
+        //         bits[10][i],
+        //         bits[11][i],
+        //         bits[12][i],
+        //         bits[13][i],
+        //         bits[14][i],
+        //         bits[15][i],
+        //     ]), [address[0], address[1], address[2], address[3], address[4], address[5], 
+        //         address[6], address[7], address[8], address[9], address[10], address[11]], load);
+        // } 
     }
 
     pub fn output(&self, clock: &Clock, address: [bit; 14]) -> Word {

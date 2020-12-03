@@ -6,6 +6,7 @@ use std::fmt::{Display, Formatter};
 use std::ops::{Index, IndexMut};
 use std::convert::From;
 
+use num_traits::{PrimInt, FromPrimitive};
 // O -> 0, I -> 1
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum bit{
@@ -20,6 +21,19 @@ impl Display for bit {
             O => "O".to_string()
         };
         write!(dest, "{}", buf)
+    }
+}
+
+impl<T> From<T> for bit 
+where
+    T: PrimInt + FromPrimitive
+{
+    fn from(value: T) -> Self {
+        match Ok(value) {
+            T::from_i32(1) => I,
+            T::from_i32(0) => O,
+            _ => panic!("bit needs 0 or 1")
+        }
     }
 }
 

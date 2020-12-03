@@ -647,11 +647,27 @@ impl Memory {
 pub struct Computer {
     rom: ROM32K,
     cpu: CPU,
-    memory: Memory
+    memory: Memory,
+    address: [bit; 15], // pc
+    inM: Word
 }
 
 impl Computer {
-    pub fn load_program(&mut self) {
+    pub fn new() -> Self {
+        Computer {
+            rom: ROM32K::new(),
+            cpu: CPU::new(),
+            memory: Memory::new(),
+            address: [O; 15],
+            inM: Word::new([O; 16])
+        }
+    }
+    pub fn run(&mut self) {
+        self.load_program();
+        self.execute(1);
+        self.compute();
+    }
+    fn load_program(&mut self) {
         print!("Input program's file name < ");
         let stdin = io::stdin();
         let mut filename = "".to_string();
@@ -662,11 +678,39 @@ impl Computer {
         }
         self.rom.load(&filename);
     }
-    pub fn compute(&mut self) {
+    fn compute(&mut self) {
         unimplemented!()
     }
-    pub fn execute(&mut self, reset: u8) {
-        unimplemented!()
+    fn execute(&mut self, reset: u8) {
+        let mut clock = Clock::new();
+
+        // Tick
+
+        // ROM
+        let instruction = self.rom.output(&clock, self.address);
+
+        // CPU
+        self.cpu.input(&clock, self.inM, instruction, bit::from(reset));
+        let (outM, writeM, addressM, pc) = self.cpu.output(&clock);
+
+        // Memory
+        self.memory.input(&clock, outM, addressM, writeM);
+        self.inM = self.memory.output(&clock, addressM);
+
+        clock.next();
+        // Tock
+
+        // ROM
+        let instruction = self.rom.output(&clock, pc);
+
+        // CPU
+        self.cpu.input(&clock, self.inM, instruction, bit::from(reset));
+        let (outM, writeM, addressM, pc) = self.cpu.output(&clock);
+        self.address = pc;
+
+        // Memory
+        self.memory.input(&clock, outM, addressM, writeM);
+        self.inM = self.memory.output(&clock, addressM);
     }
 }
 

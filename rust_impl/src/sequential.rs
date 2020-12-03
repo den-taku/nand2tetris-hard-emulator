@@ -447,15 +447,15 @@ impl RAM4K {
 
     pub fn output(&self, clock: &Clock, address: [bit; 12]) -> Word {
         Mux8Way16(
-            self.rams[0].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
-            self.rams[1].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
-            self.rams[2].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
-            self.rams[3].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
-            self.rams[4].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
-            self.rams[5].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
-            self.rams[6].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
-            self.rams[7].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8]]), 
-            [address[9], address[10], address[11]]
+            self.rams[0].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]), 
+            self.rams[1].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]), 
+            self.rams[2].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]), 
+            self.rams[3].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]), 
+            self.rams[4].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]), 
+            self.rams[5].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]), 
+            self.rams[6].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]), 
+            self.rams[7].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]), 
+            [address[0], address[1], address[2]]
         )
     }
 }

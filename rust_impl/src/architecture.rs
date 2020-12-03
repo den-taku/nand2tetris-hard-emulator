@@ -170,58 +170,67 @@ impl ROM32K {
     }
 
     fn input_inner(&mut self, clock: &Clock, input: Word, address: [bit; 15]) {
-        let bits = [
-            DMux8Way(input[0], [address[12], address[13], address[14]]),
-            DMux8Way(input[1], [address[12], address[13], address[14]]),
-            DMux8Way(input[2], [address[12], address[13], address[14]]),
-            DMux8Way(input[3], [address[12], address[13], address[14]]),
-            DMux8Way(input[4], [address[12], address[13], address[14]]),
-            DMux8Way(input[5], [address[12], address[13], address[14]]),
-            DMux8Way(input[6], [address[12], address[13], address[14]]),
-            DMux8Way(input[7], [address[12], address[13], address[14]]),
-            DMux8Way(input[8], [address[12], address[13], address[14]]),
-            DMux8Way(input[9], [address[12], address[13], address[14]]),
-            DMux8Way(input[10], [address[12], address[13], address[14]]),
-            DMux8Way(input[11], [address[12], address[13], address[14]]),
-            DMux8Way(input[12], [address[12], address[13], address[14]]),
-            DMux8Way(input[13], [address[12], address[13], address[14]]),
-            DMux8Way(input[14], [address[12], address[13], address[14]]),
-            DMux8Way(input[15], [address[12], address[13], address[14]]),
-        ];
-        for i in 0..8 {
-            self.rams[i].input(clock, Word::new([
-                bits[0][i],
-                bits[1][i],
-                bits[2][i],
-                bits[3][i],
-                bits[4][i],
-                bits[5][i],
-                bits[6][i],
-                bits[7][i],
-                bits[8][i],
-                bits[9][i],
-                bits[10][i],
-                bits[11][i],
-                bits[12][i],
-                bits[13][i],
-                bits[14][i],
-                bits[15][i],
-            ]), [address[0], address[1], address[2], address[3], address[4], address[5],
-                        address[6], address[7], address[8], address[9], address[10], address[11]], I)
-        }
+        let bits = DMux8Way(I, [address[0], address[1], address[2]]);
+        self.rams[0].input(clock, input, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]], bits[0]);
+        self.rams[1].input(clock, input, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]], bits[1]);
+        self.rams[2].input(clock, input, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]], bits[2]);
+        self.rams[3].input(clock, input, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]], bits[3]);
+        self.rams[4].input(clock, input, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]], bits[4]);
+        self.rams[5].input(clock, input, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]], bits[5]);
+        self.rams[6].input(clock, input, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]], bits[6]);
+        self.rams[7].input(clock, input, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]], bits[7]);
+        // let bits = [
+        //     DMux8Way(input[0], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[1], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[2], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[3], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[4], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[5], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[6], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[7], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[8], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[9], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[10], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[11], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[12], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[13], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[14], [address[12], address[13], address[14]]),
+        //     DMux8Way(input[15], [address[12], address[13], address[14]]),
+        // ];
+        // for i in 0..8 {
+        //     self.rams[i].input(clock, Word::new([
+        //         bits[0][i],
+        //         bits[1][i],
+        //         bits[2][i],
+        //         bits[3][i],
+        //         bits[4][i],
+        //         bits[5][i],
+        //         bits[6][i],
+        //         bits[7][i],
+        //         bits[8][i],
+        //         bits[9][i],
+        //         bits[10][i],
+        //         bits[11][i],
+        //         bits[12][i],
+        //         bits[13][i],
+        //         bits[14][i],
+        //         bits[15][i],
+        //     ]), [address[0], address[1], address[2], address[3], address[4], address[5],
+        //                 address[6], address[7], address[8], address[9], address[10], address[11]], I)
+        // }
     }
 
     pub fn output(&self, clock: &Clock, address: [bit; 15]) -> Word {
         Mux8Way16(
-            self.rams[0].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
-            self.rams[1].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
-            self.rams[2].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
-            self.rams[3].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
-            self.rams[4].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
-            self.rams[5].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
-            self.rams[6].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
-            self.rams[7].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11]]),
-            [address[12], address[13], address[14]]
+            self.rams[0].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]]),
+            self.rams[1].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]]),
+            self.rams[2].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]]),
+            self.rams[3].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]]),
+            self.rams[4].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]]),
+            self.rams[5].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]]),
+            self.rams[6].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]]),
+            self.rams[7].output(clock, [address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12], address[13], address[14]]),
+            [address[0], address[1], address[2]]
         )
     }
 
@@ -231,9 +240,7 @@ impl ROM32K {
         let mut counter = Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
         for line_result in BufReader::new(file).lines() {
             let line = line_result.expect("file reading error");
-            println!("line: {}", line);
             let instruction = Word::from(line);
-            println!("instruction: {}", instruction);
             let address = [
                 counter[1],
                 counter[2],
@@ -251,13 +258,9 @@ impl ROM32K {
                 counter[14],
                 counter[15],
             ];
-            println!("address: {:?}", address);
             self.input_inner(&clock, instruction, address);
-            println!("self.output(&clock, address): {}", self.output(&clock, address));
             clock.next();
             self.input(&clock);
-            println!("self.output(&clock, address): {}", self.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]));
-            println!("");
             clock.next();
             counter = Add16(
                 counter,

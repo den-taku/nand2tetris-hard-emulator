@@ -15,6 +15,12 @@ use sequential::ClockState::{Tick, Tock};
 fn main() {
     let mut rom = ROM32K::new();
     rom.load("test.txt");
+
+    let clock = Clock::new();
+    println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]));
+    println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]));
+    println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]));
+    println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]));
     
     // initialize as past: O, new: O
     let mut ram = Memory::new();
@@ -29,8 +35,6 @@ fn main() {
     ram.input(&clock, word_i, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], I);
     // output past in register
     assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_0);
-    rom.input(&clock);
-    println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]));
 
     // Tock
     clock.next();
@@ -39,8 +43,6 @@ fn main() {
     ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], O);
     // output new
     assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
-    rom.input(&clock);
-    println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]));
 
     // Tick
     clock.next();

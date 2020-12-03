@@ -8,7 +8,7 @@ use crate::sequential::ClockState::{Tick, Tock};
 use crate::sequential::{Clock, RAM4K, RAM16K, Register, PC};
 
 use std::io;
-use std::io::BufReader;
+use std::io::{stdout, BufReader};
 use std::io::prelude::*;
 use std::fs::File;
 
@@ -16,8 +16,8 @@ use std::fs::File;
 pub struct CPU {
     a_register: Register,
     d_register: Register,
-    outM: Register,
-    write_dst: Register,
+    outM: Word,
+    write_dst: Word,
     pc: PC
 }
 
@@ -26,8 +26,8 @@ impl CPU {
         CPU {
             a_register: Register::new(),
             d_register: Register::new(),
-            outM: Register::new(),
-            write_dst: Register::new(),
+            outM: Word::new([O; 16]),
+            write_dst: Word::new([O; 16]),
             pc: PC::new()
         }
     }
@@ -53,7 +53,9 @@ impl CPU {
         let zr = alu.1;
         let ng = alu.2;
         let ps = Not(Or(zr, ng));
-        self.outM.input(clock, alu.0, i);
+        if clock.state() == Tick {
+            self.outM = Mux16(self.outM, alu.0, i);
+        }
         self.d_register.input(clock, alu.0, And(ddd[2], i));
 
         let jump_flag = Or(
@@ -72,11 +74,13 @@ impl CPU {
                 ps
             )
         );
+        // println!("ng:{}, zr:{}, ps:{}, j0:{}, j1:{}, j2:{}", ng, zr, ps, jjj[0], jjj[1], jjj[2]);
+        // println!("jump_flag: {}", jump_flag);
         self.pc.input(
             clock, 
             self.a_register.output(clock), 
             I, 
-            jump_flag, 
+            And(jump_flag, i), 
             reset
         );
 
@@ -94,13 +98,15 @@ impl CPU {
         let writeM = And(ddd[1], i);
         let mut write_dest = self.a_register.output(clock);
         write_dest[0] = writeM;
-        self.write_dst.input(clock, write_dest, i);
+        if clock.state() == Tick {
+            self.write_dst = Mux16(self.write_dst, write_dest, i);
+        }
         let mut new_clock = Clock::new();
         new_clock.next();
     }
 
     pub fn output(&self, clock: &Clock) -> (Word, bit, [bit; 15], [bit; 15]) {
-        let write_dest = self.write_dst.output(clock);
+        let write_dest = self.write_dst;
         let writeM = write_dest[0];
         let addressM = [
             write_dest[1],
@@ -120,6 +126,7 @@ impl CPU {
             write_dest[15],
         ];
         let pc = self.pc.output(clock);
+        // println!("in CPU, pc: {}", pc);
         let count = [
             pc[1],
             pc[2],
@@ -137,7 +144,7 @@ impl CPU {
             pc[14],
             pc[15],
         ];
-        (self.outM.output(clock), writeM, addressM, count)
+        (self.outM, writeM, addressM, count)
     }
     fn decode(instruction: Word) -> (bit, [bit; 2], bit, [bit; 6], [bit; 3], [bit; 3]) {
         (
@@ -286,70 +293,73 @@ impl Screen {
     }
 
     pub fn input(&mut self, clock: &Clock, input: Word, address: [bit; 13], load: bit) {
-        let bits = [
-            DMux(input[0], address[12]),
-            DMux(input[1], address[12]),
-            DMux(input[2], address[12]),
-            DMux(input[3], address[12]),
-            DMux(input[4], address[12]),
-            DMux(input[5], address[12]),
-            DMux(input[6], address[12]),
-            DMux(input[7], address[12]),
-            DMux(input[8], address[12]),
-            DMux(input[9], address[12]),
-            DMux(input[10], address[12]),
-            DMux(input[11], address[12]),
-            DMux(input[12], address[12]),
-            DMux(input[13], address[12]),
-            DMux(input[14], address[12]),
-            DMux(input[15], address[12]),
-        ];
-        for i in 0..2 {
-            self.rams[i].input(clock, Word::new([
-                bits[0][i],
-                bits[1][i],
-                bits[2][i],
-                bits[3][i],
-                bits[4][i],
-                bits[5][i],
-                bits[6][i],
-                bits[7][i],
-                bits[8][i],
-                bits[9][i],
-                bits[10][i],
-                bits[11][i],
-                bits[12][i],
-                bits[13][i],
-                bits[14][i],
-                bits[15][i],
-            ]), [address[0], address[1], address[2], address[3], address[4], address[5],
-                        address[6], address[7], address[8], address[9], address[10], address[11]], load)
-        }
+        let bits = DMux(load, address[0]);
+        self.rams[0].input(clock, input, [address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12]], bits[0]);
+        self.rams[0].input(clock, input, [address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12]], bits[0]);
+        // let bits = [
+        //     DMux(input[0], address[12]),
+        //     DMux(input[1], address[12]),
+        //     DMux(input[2], address[12]),
+        //     DMux(input[3], address[12]),
+        //     DMux(input[4], address[12]),
+        //     DMux(input[5], address[12]),
+        //     DMux(input[6], address[12]),
+        //     DMux(input[7], address[12]),
+        //     DMux(input[8], address[12]),
+        //     DMux(input[9], address[12]),
+        //     DMux(input[10], address[12]),
+        //     DMux(input[11], address[12]),
+        //     DMux(input[12], address[12]),
+        //     DMux(input[13], address[12]),
+        //     DMux(input[14], address[12]),
+        //     DMux(input[15], address[12]),
+        // ];
+        // for i in 0..2 {
+        //     self.rams[i].input(clock, Word::new([
+        //         bits[0][i],
+        //         bits[1][i],
+        //         bits[2][i],
+        //         bits[3][i],
+        //         bits[4][i],
+        //         bits[5][i],
+        //         bits[6][i],
+        //         bits[7][i],
+        //         bits[8][i],
+        //         bits[9][i],
+        //         bits[10][i],
+        //         bits[11][i],
+        //         bits[12][i],
+        //         bits[13][i],
+        //         bits[14][i],
+        //         bits[15][i],
+        //     ]), [address[0], address[1], address[2], address[3], address[4], address[5],
+        //                 address[6], address[7], address[8], address[9], address[10], address[11]], load)
+        // }
     }
 
     pub fn output(&self, clock: &Clock, address: [bit; 13]) -> Word {
-        let output1 = self.rams[0].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5],
-                                                               address[6], address[7], address[8], address[9], address[10], address[11]]);
-        let output2 = self.rams[1].output(clock, [address[0], address[1], address[2], address[3], address[4], address[5],
-                                                                address[6], address[7], address[8], address[9], address[10], address[11]]);
+        let output1 = self.rams[0].output(clock, [address[1], address[2], address[3], address[4], address[5], address[6],
+                                                               address[7], address[8], address[9], address[10], address[11], address[12]]);
+        let output2 = self.rams[1].output(clock, [address[1], address[2], address[3], address[4], address[5], address[6], 
+                                                                address[7], address[8], address[9], address[10], address[11], address[12]]);
         // Draw screen
         Word::new([
-            Mux(output1[0], output2[0], address[12]),
-            Mux(output1[1], output2[1], address[12]),
-            Mux(output1[2], output2[2], address[12]),
-            Mux(output1[3], output2[3], address[12]),
-            Mux(output1[4], output2[4], address[12]),
-            Mux(output1[5], output2[5], address[12]),
-            Mux(output1[6], output2[6], address[12]),
-            Mux(output1[7], output2[7], address[12]),
-            Mux(output1[8], output2[8], address[12]),
-            Mux(output1[9], output2[9], address[12]),
-            Mux(output1[10], output2[10], address[12]),
-            Mux(output1[11], output2[11], address[12]),
-            Mux(output1[12], output2[12], address[12]),
-            Mux(output1[13], output2[13], address[12]),
-            Mux(output1[14], output2[14], address[12]),
-            Mux(output1[15], output2[15], address[12]),
+            Mux(output1[0], output2[0], address[0]),
+            Mux(output1[1], output2[1], address[0]),
+            Mux(output1[2], output2[2], address[0]),
+            Mux(output1[3], output2[3], address[0]),
+            Mux(output1[4], output2[4], address[0]),
+            Mux(output1[5], output2[5], address[0]),
+            Mux(output1[6], output2[6], address[0]),
+            Mux(output1[7], output2[7], address[0]),
+            Mux(output1[8], output2[8], address[0]),
+            Mux(output1[9], output2[9], address[0]),
+            Mux(output1[10], output2[10], address[0]),
+            Mux(output1[11], output2[11], address[0]),
+            Mux(output1[12], output2[12], address[0]),
+            Mux(output1[13], output2[13], address[0]),
+            Mux(output1[14], output2[14], address[0]),
+            Mux(output1[15], output2[15], address[0]),
         ])
     }
 }
@@ -664,11 +674,12 @@ impl Computer {
     }
     pub fn run(&mut self) {
         self.load_program();
-        self.execute(1);
+        // self.execute(1);
         self.compute();
     }
     fn load_program(&mut self) {
         print!("Input program's file name < ");
+        stdout().flush().unwrap();
         let stdin = io::stdin();
         let mut filename = "".to_string();
         for line_result in stdin.lock().lines() {
@@ -679,19 +690,31 @@ impl Computer {
         self.rom.load(&filename);
     }
     fn compute(&mut self) {
-        unimplemented!()
+        self.execute(1);
+        for _ in 0..6 {
+            self.execute(0);
+        }
+        let mut clock = Clock::new();
+        println!("Answer is");
+        self.memory.input(&clock, Word::new([I; 16]), [I; 15], O);
+        println!("{}", self.memory.output(&clock, [O; 15]));
+        clock.next();
+        self.memory.input(&clock, Word::new([I; 16]), [I; 15], O);
+        println!("{}", self.memory.output(&clock, [O; 15]));
     }
     fn execute(&mut self, reset: u8) {
         let mut clock = Clock::new();
-
         // Tick
 
         // ROM
         let instruction = self.rom.output(&clock, self.address);
+        // println!("pc address: {:?}", self.address);
+        println!("instruction: {}", instruction);
 
         // CPU
         self.cpu.input(&clock, self.inM, instruction, bit::from(reset));
         let (outM, writeM, addressM, pc) = self.cpu.output(&clock);
+        println!("outM: {}", outM);
 
         // Memory
         self.memory.input(&clock, outM, addressM, writeM);
@@ -706,11 +729,14 @@ impl Computer {
         // CPU
         self.cpu.input(&clock, self.inM, instruction, bit::from(reset));
         let (outM, writeM, addressM, pc) = self.cpu.output(&clock);
-        self.address = pc;
+        // println!("pc: {:?}", pc);
+        println!("");
+        // Use Mux when you make real curcuit
+        self.address = if bit::from(reset) == I { [O; 15] } else { pc };
 
         // Memory
         self.memory.input(&clock, outM, addressM, writeM);
-        self.inM = self.memory.output(&clock, addressM);
+        self.inM = if bit::from(reset) == I { Word::new([O; 16]) } else { self.memory.output(&clock, addressM)} ;
     }
 }
 

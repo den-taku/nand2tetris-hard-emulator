@@ -13,105 +13,107 @@ use sequential::*;
 use sequential::ClockState::{Tick, Tock};
 
 fn main() {
-    let mut rom = ROM32K::new();
-    rom.load("test.txt");
+    let mut computer = Computer::new();
+    computer.run();
+    // let mut rom = ROM32K::new();
+    // rom.load("test.txt");
 
-    let clock = Clock::new();
-    println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]));
-    println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]));
-    println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]));
-    println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]));
+    // let clock = Clock::new();
+    // println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]));
+    // println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]));
+    // println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]));
+    // println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]));
     
-    // initialize as past: O, new: O
-    let mut ram = Memory::new();
-    // initialize state as Tick
-    let mut clock = Clock::new();
+    // // initialize as past: O, new: O
+    // let mut ram = Memory::new();
+    // // initialize state as Tick
+    // let mut clock = Clock::new();
 
-    let word_i = Word::new([I, O, I, O, I, I, O, O, O, I, O, I, O, O, I, I]);
-    let word_o = Word::new([O, I, O, I, O, O, I, I, I, O, I, O, I, I, O, O]);
-    let word_0 = Word::new([O; 16]);
+    // let word_i = Word::new([I, O, I, O, I, I, O, O, O, I, O, I, O, O, I, I]);
+    // let word_o = Word::new([O, I, O, I, O, O, I, I, I, O, I, O, I, I, O, O]);
+    // let word_0 = Word::new([O; 16]);
 
-    // input as past: word_0, new: word_i in registers
-    ram.input(&clock, word_i, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], I);
-    // output past in register
-    assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_0);
+    // // input as past: word_0, new: word_i in registers
+    // ram.input(&clock, word_i, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], I);
+    // // output past in register
+    // assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_0);
 
-    // Tock
-    clock.next();
+    // // Tock
+    // clock.next();
 
-    // nothing happened
-    ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], O);
-    // output new
-    assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
+    // // nothing happened
+    // ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], O);
+    // // output new
+    // assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
 
-    // Tick
-    clock.next();
+    // // Tick
+    // clock.next();
 
-    // initialize as past: I, new: I
-    ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], O);
-    // output past
-    assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
+    // // initialize as past: I, new: I
+    // ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], O);
+    // // output past
+    // assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
 
-    // Tock
-    clock.next();
+    // // Tock
+    // clock.next();
 
-    // nothing happened
-    ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], I);
-    // output new
-    assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
+    // // nothing happened
+    // ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], I);
+    // // output new
+    // assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
 
-    // Tick
-    clock.next();
+    // // Tick
+    // clock.next();
 
-    // initialize as past: I, new: O
-    ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], I);
-    // output past
-    assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
+    // // initialize as past: I, new: O
+    // ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], I);
+    // // output past
+    // assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
 
-    // Tock
-    clock.next();
+    // // Tock
+    // clock.next();
 
-    // nothing happened
-    ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], I);
-    // output new
-    assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_o);
+    // // nothing happened
+    // ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], I);
+    // // output new
+    // assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_o);
     
-    clock.next();
+    // clock.next();
 
-    ram.input(&clock, word_o, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], I);
-    assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_0);
+    // ram.input(&clock, word_o, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], I);
+    // assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_0);
 
-    clock.next();
+    // clock.next();
 
-    ram.input(&clock, word_i, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], O);
-    assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_o);
+    // ram.input(&clock, word_i, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], O);
+    // assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_o);
 
-    clock.next();
+    // clock.next();
 
-    ram.input(&clock, word_i, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], O);
-    assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_o);
+    // ram.input(&clock, word_i, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], O);
+    // assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_o);
 
-    clock.next();
+    // clock.next();
 
-    ram.input(&clock, word_i, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], I);
-    assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_o);
+    // ram.input(&clock, word_i, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], I);
+    // assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_o);
 
-    clock.next();
+    // clock.next();
 
-    ram.input(&clock, word_i, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], I);
-    assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_o);
+    // ram.input(&clock, word_i, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], I);
+    // assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_o);
 
-    clock.next();
+    // clock.next();
 
-    ram.input(&clock, word_i, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], I);
-    assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_i);
+    // ram.input(&clock, word_i, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], I);
+    // assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_i);
 
-    clock.next();
+    // clock.next();
 
-    ram.input(&clock, word_i, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], I);
-    assert_eq!(ram.output(&clock, [I, I, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_0);
+    // ram.input(&clock, word_i, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], I);
+    // assert_eq!(ram.output(&clock, [I, I, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_0);
 
-    clock.next();
+    // clock.next();
     // println!("{}", And(I, O));
     // println!("{}", Word::new([O; 16]));
     // println!("{}", Word::new([I; 16]));
@@ -149,26 +151,26 @@ fn main() {
     // Tick
     // clock.next();
 
-    let mut pc = PC::new();
-    let mut clock = Clock::new();
-    let mut memory = Memory::new();
-    // clock.next();
-    for _ in 0..80 {
-        memory.keyboard_input(&clock);
-        pc.input(&clock, Word::new([I; 16]), I, O, O);
-        let out = pc.output(&clock);
-        memory.input(&clock, Word::new([I; 16]), [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I], I);
-        let memory_out = memory.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]);
-        // println!("");
-        // println!("times: {}, PC: {:?}", i, pc);
-        if clock.state() == Tock {
-            println!("");
-            println!("{}", out);
-            println!("memory");
-            println!("{}", memory_out);
-        }
-        clock.next();
-    }
+    // let mut pc = PC::new();
+    // let mut clock = Clock::new();
+    // let mut memory = Memory::new();
+    // // clock.next();
+    // for _ in 0..80 {
+    //     memory.keyboard_input(&clock);
+    //     pc.input(&clock, Word::new([I; 16]), I, O, O);
+    //     let out = pc.output(&clock);
+    //     memory.input(&clock, Word::new([I; 16]), [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I], I);
+    //     let memory_out = memory.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]);
+    //     // println!("");
+    //     // println!("times: {}, PC: {:?}", i, pc);
+    //     if clock.state() == Tock {
+    //         println!("");
+    //         println!("{}", out);
+    //         println!("memory");
+    //         println!("{}", memory_out);
+    //     }
+    //     clock.next();
+    // }
 
     // let mut clock = Clock::new();
     // loop {

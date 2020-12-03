@@ -231,7 +231,9 @@ impl ROM32K {
         let mut counter = Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
         for line_result in BufReader::new(file).lines() {
             let line = line_result.expect("file reading error");
+            println!("line: {}", line);
             let instruction = Word::from(line);
+            println!("instruction: {}", instruction);
             let address = [
                 counter[1],
                 counter[2],
@@ -249,11 +251,13 @@ impl ROM32K {
                 counter[14],
                 counter[15],
             ];
+            println!("address: {:?}", address);
             self.input_inner(&clock, instruction, address);
-            self.output(&clock, address);
+            println!("self.output(&clock, address): {}", self.output(&clock, address));
             clock.next();
             self.input(&clock);
-            self.output(&clock, address);
+            println!("self.output(&clock, address): {}", self.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]));
+            println!("");
             clock.next();
             counter = Add16(
                 counter,
@@ -862,8 +866,8 @@ mod tests {
 
     #[test]
     fn for_rom32k() {
-        let mut rom = ROM32K::new();
-        rom.load("test.txt");
+        // let mut rom = ROM32K::new();
+        // rom.load("test.txt");
         // let mut clock = Clock::new();
 
         // rom.input(&clock);

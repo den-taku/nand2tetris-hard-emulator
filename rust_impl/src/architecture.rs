@@ -719,6 +719,7 @@ impl Computer {
         // Memory
         self.memory.input(&clock, outM, addressM, writeM);
         self.inM = self.memory.output(&clock, addressM);
+        println!("inM: {}", self.inM);
 
         clock.next();
         // Tock

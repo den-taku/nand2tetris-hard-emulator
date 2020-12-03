@@ -165,7 +165,7 @@ impl ROM32K {
     // This needs for inner implementation
     pub fn input(&mut self, clock: &Clock) {
         for i in 0..8 {
-            self.rams[i].input(clock, Word::new([O; 16]), [O; 12], O);
+            self.rams[i].input(clock, Word::new([O; 16]), [I; 12], O);
         }
     }
 
@@ -260,6 +260,11 @@ impl ROM32K {
                 Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I])
             )
         }
+        self.input(&clock);
+        self.output(&clock, [I; 15]);
+        clock.next();
+        self.input(&clock);
+        self.output(&clock, [I; 15]);
     }
 }
 

@@ -29,6 +29,8 @@ fn main() {
     ram.input(&clock, word_i, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O], I);
     // output past in register
     assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]), word_0);
+    rom.input(&clock);
+    println!("{}", rom.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]));
 
     // Tock
     clock.next();

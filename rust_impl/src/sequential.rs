@@ -171,44 +171,53 @@ impl RAM8 {
     }
 
     pub fn input(&mut self, clock: &Clock, input: Word, address: [bit; 3], load: bit) {
-        let bits = [
-            DMux8Way(input[0], address),
-            DMux8Way(input[1], address),
-            DMux8Way(input[2], address),
-            DMux8Way(input[3], address),
-            DMux8Way(input[4], address),
-            DMux8Way(input[5], address),
-            DMux8Way(input[6], address),
-            DMux8Way(input[7], address),
-            DMux8Way(input[8], address),
-            DMux8Way(input[9], address),
-            DMux8Way(input[10], address),
-            DMux8Way(input[11], address),
-            DMux8Way(input[12], address),
-            DMux8Way(input[13], address),
-            DMux8Way(input[14], address),
-            DMux8Way(input[15], address),
-        ];
-        for i in 0..8 {
-            self.registers[i].input(clock, Word::new([
-                bits[0][i],
-                bits[1][i],
-                bits[2][i],
-                bits[3][i],
-                bits[4][i],
-                bits[5][i],
-                bits[6][i],
-                bits[7][i],
-                bits[8][i],
-                bits[9][i],
-                bits[10][i],
-                bits[11][i],
-                bits[12][i],
-                bits[13][i],
-                bits[14][i],
-                bits[15][i],
-            ]), load);
-        }
+        let bits = DMux8Way(load, address);
+        self.registers[0].input(clock, input, bits[0]);
+        self.registers[1].input(clock, input, bits[1]);
+        self.registers[2].input(clock, input, bits[2]);
+        self.registers[3].input(clock, input, bits[3]);
+        self.registers[4].input(clock, input, bits[4]);
+        self.registers[5].input(clock, input, bits[5]);
+        self.registers[6].input(clock, input, bits[6]);
+        self.registers[7].input(clock, input, bits[7]);
+        // let bits = [
+        //     DMux8Way(input[0], address),
+        //     DMux8Way(input[1], address),
+        //     DMux8Way(input[2], address),
+        //     DMux8Way(input[3], address),
+        //     DMux8Way(input[4], address),
+        //     DMux8Way(input[5], address),
+        //     DMux8Way(input[6], address),
+        //     DMux8Way(input[7], address),
+        //     DMux8Way(input[8], address),
+        //     DMux8Way(input[9], address),
+        //     DMux8Way(input[10], address),
+        //     DMux8Way(input[11], address),
+        //     DMux8Way(input[12], address),
+        //     DMux8Way(input[13], address),
+        //     DMux8Way(input[14], address),
+        //     DMux8Way(input[15], address),
+        // ];
+        // for i in 0..8 {
+        //     self.registers[i].input(clock, Word::new([
+        //         bits[0][i],
+        //         bits[1][i],
+        //         bits[2][i],
+        //         bits[3][i],
+        //         bits[4][i],
+        //         bits[5][i],
+        //         bits[6][i],
+        //         bits[7][i],
+        //         bits[8][i],
+        //         bits[9][i],
+        //         bits[10][i],
+        //         bits[11][i],
+        //         bits[12][i],
+        //         bits[13][i],
+        //         bits[14][i],
+        //         bits[15][i],
+        //     ]), load);
+        // }
     }
 
     pub fn output(&self, clock: &Clock, address: [bit; 3]) -> Word {

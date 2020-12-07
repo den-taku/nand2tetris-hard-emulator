@@ -298,7 +298,7 @@ impl Screen {
     pub fn input(&mut self, clock: &Clock, input: Word, address: [bit; 13], load: bit) {
         let bits = DMux(load, address[0]);
         self.rams[0].input(clock, input, [address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12]], bits[0]);
-        self.rams[0].input(clock, input, [address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12]], bits[0]);
+        self.rams[1].input(clock, input, [address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12]], bits[0]);
         // let bits = [
         //     DMux(input[0], address[12]),
         //     DMux(input[1], address[12]),
@@ -694,16 +694,16 @@ impl Computer {
     }
     fn compute(&mut self) {
         self.execute(1);
-        for _ in 0..6 {
+        for _ in 0..20 {
             self.execute(0);
         }
         let mut clock = Clock::new();
         println!("Answer is");
         self.memory.input(&clock, Word::new([I; 16]), [I; 15], O);
-        println!("{}", self.memory.output(&clock, [O; 15]));
+        println!("{}", self.memory.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]));
         clock.next();
         self.memory.input(&clock, Word::new([I; 16]), [I; 15], O);
-        println!("{}", self.memory.output(&clock, [O; 15]));
+        println!("{}", self.memory.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]));
     }
     fn execute(&mut self, reset: u8) {
         let mut clock = Clock::new();
@@ -784,7 +784,7 @@ mod tests {
         let (_outM, writeM, addressM, pc) = cpu.output(&clock);
         // assert_eq!(outM, word0);
         assert_eq!(writeM, O);
-        assert_eq!(addressM, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, O]);
+        assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]);
         assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]);
         assert_eq!(cpu.a_register.output(&clock), Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]));
 
@@ -794,7 +794,7 @@ mod tests {
         cpu.input(&clock, word0, Word::new([I, I, I, O, I, I, O, O, O, O, O, I, O, O, O, O]), O);
         let (_outM, writeM, addressM, pc) = cpu.output(&clock);
         // assert_eq!(outM, word0);
-        assert_eq!(writeM, I);
+        assert_eq!(writeM, O);
         assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]); // 12345
         assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]); 
 
@@ -804,7 +804,7 @@ mod tests {
         cpu.input(&clock, word0, Word::new([I, I, I, O, I, I, O, O, O, O, O, I, O, O, O, O]), O);
         let (_outM, writeM, addressM, pc) = cpu.output(&clock);
         // assert_eq!(outM, word0);
-        assert_eq!(writeM, I);
+        assert_eq!(writeM, O);
         assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]);
         assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]);
         assert_eq!(cpu.a_register.output(&clock), Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]));
@@ -815,7 +815,7 @@ mod tests {
         cpu.input(&clock, word0, Word::new([I, I, I, O, I, I, O, O, O, O, O, I, O, O, O, O]), O);
         let (_outM, writeM, addressM, pc) = cpu.output(&clock);
         // assert_eq!(outM, word0);
-        assert_eq!(writeM, I);
+        assert_eq!(writeM, O);
         assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]); // 12345
         assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]); 
 
@@ -825,7 +825,7 @@ mod tests {
         cpu.input(&clock, word1, Word::new([I, I, I, I, O, I, O, O, I, I, O, I, O, O, O, O]), O);
         let (_outM, writeM, addressM, pc) = cpu.output(&clock);
         // assert_eq!(outM, word0);
-        assert_eq!(writeM, I);
+        assert_eq!(writeM, O);
         assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]);
         assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, I]);
         assert_eq!(cpu.a_register.output(&clock), Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]));
@@ -835,8 +835,8 @@ mod tests {
         // CLOCK: TOCK
         cpu.input(&clock, word0, Word::new([I, I, I, O, I, I, O, O, O, O, O, I, O, O, O, O]), O);
         let (outM, writeM, addressM, pc) = cpu.output(&clock);
-        assert_eq!(outM, Word::new([O, O, O, O, O, O, O, O, O, O, O, O, O, O, O, I]));
-        assert_eq!(writeM, I);
+        assert_eq!(outM, Word::new([O, O, I, I, O, O, O, O, O, O, I, I, I, O, I, O]));
+        assert_eq!(writeM, O);
         assert_eq!(addressM, [O, I, I, O, O, O, O, O, O, I, I, I, O, O, I]); // 12345
         assert_eq!(pc, [O, O, O, O, O, O, O, O, O, O, O, O, I, O, O]);
 
@@ -1012,7 +1012,7 @@ mod tests {
         // input as past: word_0, new: word_i in registers
         ram.input(&clock, word_i, [O, O, O, O, O, O, O, O, O, O, O, O, O], I);
         // output past in register
-        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]), word_0);
+        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]), word_0); 
 
         // Tock
         clock.next();
@@ -1044,7 +1044,7 @@ mod tests {
         // initialize as past: I, new: O
         ram.input(&clock, word_o, [O, O, O, O, O, O, O, O, O, O, O, O, O], I);
         // output past
-        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i);
+        assert_eq!(ram.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O]), word_i); 
 
         // Tock
         clock.next();
@@ -1057,7 +1057,7 @@ mod tests {
         clock.next();
 
         ram.input(&clock, word_o, [O, O, I, O, O, I, O, O, I, O, O, I, O], I);
-        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I, O]), word_0);
+        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I, O]), word_0); 
 
         clock.next();
 
@@ -1077,7 +1077,7 @@ mod tests {
         clock.next();
 
         ram.input(&clock, word_i, [O, O, I, O, O, I, O, O, I, O, O, I, O], I);
-        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I, O]), word_o);
+        assert_eq!(ram.output(&clock, [O, O, I, O, O, I, O, O, I, O, O, I, O]), word_o); 
 
         clock.next();
 

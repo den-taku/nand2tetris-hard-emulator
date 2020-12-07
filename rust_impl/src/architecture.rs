@@ -53,10 +53,8 @@ impl CPU {
             cccccc[5]
         );
         let ps = Not(Or(zr, ng));
-        println!("alu: {}", alu);
         if clock.state() == Tick {
             self.outM = Mux16(self.outM, alu, i);
-            println!("update outM: {}", self.outM);
         }
         self.d_register.input(clock, alu, And(ddd[1], i));
 
@@ -76,8 +74,6 @@ impl CPU {
                 ps
             )
         );
-        // println!("ng:{}, zr:{}, ps:{}, j0:{}, j1:{}, j2:{}", ng, zr, ps, jjj[0], jjj[1], jjj[2]);
-        // println!("jump_flag: {}", jump_flag);
         self.pc.input(
             clock, 
             self.a_register.output(&clock_tmp), 
@@ -87,7 +83,6 @@ impl CPU {
         );
 
         // When A instruction inputed, load
-        println!("instruction before input a: {}", instruction);
         self.a_register.input(
             clock, 
             Mux16(
@@ -100,10 +95,8 @@ impl CPU {
 
         let writeM = And(ddd[2], i);
         let write_dest0 = self.a_register.output(clock);
-        println!("write_dest0: {}", write_dest0);
         let mut write_dest1 = write_dest0;
         write_dest1[0] = writeM;
-        println!("write_dest1: {}", write_dest1);
         // if clock.state() == Tick {
             self.write_dst = Mux16(write_dest0, write_dest1, i);
         // }
@@ -132,7 +125,6 @@ impl CPU {
             write_dest[15],
         ];
         let pc = self.pc.output(clock);
-        // println!("in CPU, pc: {}", pc);
         let count = [
             pc[1],
             pc[2],
@@ -696,17 +688,17 @@ impl Computer {
         self.rom.load(&filename);
     }
     fn compute(&mut self) {
-        self.execute(1); // CHECK
-        for _ in 0..22 {
+        self.execute(1); 
+        loop {
             self.execute(0);
         }
-        let mut clock = Clock::new();
-        println!("Answer is");
-        self.memory.input(&clock, Word::new([I; 16]), [I; 15], O);
-        println!("{}", self.memory.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]));
-        clock.next();
-        self.memory.input(&clock, Word::new([I; 16]), [I; 15], O);
-        println!("{}", self.memory.output(&clock, [O, O, O, O, O, O, O, O, O, O, O, O, O, I, O]));
+        // let mut clock = Clock::new();
+        // println!("Answer is");
+        // self.memory.input(&clock, Word::new([I; 16]), [I; 15], O);
+        // println!("M[16]: {}", self.memory.output(&clock, [O, O, O, O, O, O, O, O, O, O, I, O, O, O, O]));
+        // clock.next();
+        // self.memory.input(&clock, Word::new([I; 16]), [I; 15], O);
+        // println!("M[17]: {}", self.memory.output(&clock, [O, O, O, O, O, O, O, O, O, O, I, O, O, O, I]));
     }
     fn execute(&mut self, reset: u8) {
         let mut clock = Clock::new();
@@ -714,19 +706,14 @@ impl Computer {
 
         // ROM
         let instruction = self.rom.output(&clock, self.address);
-        println!("instruction: {}", instruction);
-        println!("pc address: {:?}", self.address);
 
         // CPU
         self.cpu.input(&clock, self.inM, instruction, bit::from(reset));
         let (outM, writeM, addressM, pc) = self.cpu.output(&clock);
-        println!("outM: {}", outM);
 
         // Memory
         self.memory.input(&clock, outM, addressM, writeM);
-        println!("addressM: {:?}", addressM);
         self.inM = self.memory.output(&clock, addressM);
-        println!("inM: {}", self.inM);
 
         clock.next();
         // Tock
@@ -737,15 +724,12 @@ impl Computer {
         // CPU
         self.cpu.input(&clock, self.inM, instruction, bit::from(reset));
         let (outM, writeM, addressM, pc) = self.cpu.output(&clock);
-        // println!("pc: {:?}", pc);
         // Use Mux when you make real curcuit
         self.address = if bit::from(reset) == I { [O; 15] } else { pc };
 
         // Memory
         self.memory.input(&clock, outM, addressM, writeM);
         self.inM = if bit::from(reset) == I { Word::new([O; 16]) } else { self.memory.output(&clock, addressM)} ;
-        println!("inM: {}", self.inM);
-        println!("");
     }
 }
 

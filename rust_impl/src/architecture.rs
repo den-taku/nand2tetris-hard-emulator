@@ -296,6 +296,7 @@ impl Screen {
     }
 
     pub fn input(&mut self, clock: &Clock, input: Word, address: [bit; 13], load: bit) {
+        if load == I { println!("screen input!"); }
         let bits = DMux(load, address[0]);
         self.rams[0].input(clock, input, [address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12]], bits[0]);
         self.rams[1].input(clock, input, [address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12]], bits[0]);
@@ -341,6 +342,7 @@ impl Screen {
     }
 
     pub fn output(&self, clock: &Clock, address: [bit; 13]) -> Word {
+        println!("screen!");
         let output1 = self.rams[0].output(clock, [address[1], address[2], address[3], address[4], address[5], address[6],
                                                                address[7], address[8], address[9], address[10], address[11], address[12]]);
         let output2 = self.rams[1].output(clock, [address[1], address[2], address[3], address[4], address[5], address[6], 
@@ -631,6 +633,7 @@ impl Memory {
             [address[2], address[3], address[4], address[5], address[6], address[7],
                      address[8], address[9], address[10], address[11], address[12], address[13], address[14]], 
                     And(And(address[0], Not(address[1])), load));
+                    println!("screen_flag: {}", And(And(address[0], Not(address[1])), load));
         // keyboard ---> keyboard
     }
 
@@ -642,6 +645,7 @@ impl Memory {
             [address[2], address[3], address[4], address[5], address[6], address[7],
             address[8], address[9], address[10], address[11], address[12], address[13], address[14]]);
         let keyboard_output = self.keyboard.output();
+        println!("address[0]:{}, address[1]:{}", address[0], address[1]);
         Mux4Way16(
             ram_output,
             ram_output,
@@ -711,8 +715,8 @@ impl Computer {
 
         // ROM
         let instruction = self.rom.output(&clock, self.address);
-        // println!("pc address: {:?}", self.address);
         println!("instruction: {}", instruction);
+        println!("pc address: {:?}", self.address);
 
         // CPU
         self.cpu.input(&clock, self.inM, instruction, bit::from(reset));

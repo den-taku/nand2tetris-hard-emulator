@@ -36,9 +36,9 @@ impl CPU {
 
         // When C instruction inputed, work
         // let word_a = Mux16(self.a_register.output(clock), inM, a);
-        let mut clock_tmp = Clock::new();
+        let mut clock_tmp = clock.clone();
         clock_tmp.next();
-        let alu = ALU(
+        let (alu, zr, ng) = ALU(
             self.d_register.output(&clock_tmp), 
             Mux16(
                 self.a_register.output(&clock_tmp),
@@ -51,15 +51,14 @@ impl CPU {
             cccccc[3],
              cccccc[4],
             cccccc[5]
-            );
-        let zr = alu.1;
-        let ng = alu.2;
+        );
         let ps = Not(Or(zr, ng));
-        println!("alu.0: {}", alu.0);
+        println!("alu: {}", alu);
         if clock.state() == Tick {
-            self.outM = Mux16(self.outM, alu.0, i);
+            self.outM = Mux16(self.outM, alu, i);
+            println!("update outM: {}", self.outM);
         }
-        self.d_register.input(clock, alu.0, And(ddd[1], i));
+        self.d_register.input(clock, alu, And(ddd[1], i));
 
         let jump_flag = Or(
             Or(
@@ -81,29 +80,33 @@ impl CPU {
         // println!("jump_flag: {}", jump_flag);
         self.pc.input(
             clock, 
-            self.a_register.output(clock), 
+            self.a_register.output(&clock_tmp), 
             I, 
             And(jump_flag, i), 
             reset
         );
 
         // When A instruction inputed, load
+        println!("instruction before input a: {}", instruction);
         self.a_register.input(
             clock, 
             Mux16(
                 instruction, 
-                alu.0,
+                alu,
                 i
             ),
             Or(Not(i), ddd[0])
         );
 
         let writeM = And(ddd[2], i);
-        let mut write_dest = self.a_register.output(clock);
-        write_dest[0] = writeM;
-        if clock.state() == Tick {
-            self.write_dst = Mux16(self.write_dst, write_dest, i);
-        }
+        let write_dest0 = self.a_register.output(clock);
+        println!("write_dest0: {}", write_dest0);
+        let mut write_dest1 = write_dest0;
+        write_dest1[0] = writeM;
+        println!("write_dest1: {}", write_dest1);
+        // if clock.state() == Tick {
+            self.write_dst = Mux16(write_dest0, write_dest1, i);
+        // }
         let mut new_clock = Clock::new();
         new_clock.next();
     }
@@ -693,8 +696,8 @@ impl Computer {
         self.rom.load(&filename);
     }
     fn compute(&mut self) {
-        self.execute(1);
-        for _ in 0..20 {
+        self.execute(1); // CHECK
+        for _ in 0..22 {
             self.execute(0);
         }
         let mut clock = Clock::new();
@@ -721,6 +724,7 @@ impl Computer {
 
         // Memory
         self.memory.input(&clock, outM, addressM, writeM);
+        println!("addressM: {:?}", addressM);
         self.inM = self.memory.output(&clock, addressM);
         println!("inM: {}", self.inM);
 
@@ -734,13 +738,14 @@ impl Computer {
         self.cpu.input(&clock, self.inM, instruction, bit::from(reset));
         let (outM, writeM, addressM, pc) = self.cpu.output(&clock);
         // println!("pc: {:?}", pc);
-        println!("");
         // Use Mux when you make real curcuit
         self.address = if bit::from(reset) == I { [O; 15] } else { pc };
 
         // Memory
         self.memory.input(&clock, outM, addressM, writeM);
         self.inM = if bit::from(reset) == I { Word::new([O; 16]) } else { self.memory.output(&clock, addressM)} ;
+        println!("inM: {}", self.inM);
+        println!("");
     }
 }
 

@@ -69,18 +69,19 @@ fn main() {
         
         clock.next();
 
+        println!("ZZZZZZZZZZZZZZZZ--Screen--ZZZZZZZZZZZZZZZZZZZZZ");
         ram.input(&clock, word_o, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], I);
         assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_0);
 
         clock.next();
 
         ram.input(&clock, word_i, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], O);
-        assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_0); // HERE owrd_o
+        assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_o); // HERE owrd_o
 
         clock.next();
 
         ram.input(&clock, word_i, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O], O);
-        assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_0); // HERE word_o
+        assert_eq!(ram.output(&clock, [I, O, I, O, O, I, O, O, I, O, O, I, O, O, O]), word_o); // HERE word_o
 
         clock.next();
 

@@ -41,7 +41,7 @@ impl CPU {
         let alu = ALU(
             self.d_register.output(&clock_tmp), 
             Mux16(
-                self.a_register.output(clock),
+                self.a_register.output(&clock_tmp),
                 inM,
                 a
                 ),

@@ -36,8 +36,10 @@ impl CPU {
 
         // When C instruction inputed, work
         // let word_a = Mux16(self.a_register.output(clock), inM, a);
+        let mut clock_tmp = Clock::new();
+        clock_tmp.next();
         let alu = ALU(
-            self.d_register.output(clock), 
+            self.d_register.output(&clock_tmp), 
             Mux16(
                 self.a_register.output(clock),
                 inM,
@@ -53,6 +55,7 @@ impl CPU {
         let zr = alu.1;
         let ng = alu.2;
         let ps = Not(Or(zr, ng));
+        println!("alu.0: {}", alu.0);
         if clock.state() == Tick {
             self.outM = Mux16(self.outM, alu.0, i);
         }

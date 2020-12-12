@@ -6,6 +6,11 @@ use crate::logic::bit::{I, O};
 use crate::arithmetic::{ALU, Add16};
 use crate::sequential::ClockState::{Tick, Tock};
 use crate::sequential::{Clock, RAM4K, RAM16K, Register, PC};
+use sdl2::pixels::Color;
+use sdl2::EventPump;
+use sdl2::event::Event;
+use sdl2::render::WindowCanvas;
+use sdl2::rect::Rect;
 
 use std::io;
 use std::io::{stdout, BufReader};
@@ -280,20 +285,59 @@ impl ROM32K {
     }
 }
 
-#[derive(Copy, Clone)]
+struct CanvasManager {
+    event_pump: EventPump,
+    canvas: WindowCanvas
+}
+
+impl CanvasManager {
+    fn new() -> Self {
+        let sdl_context = sdl2::init().unwrap();
+        let video_subsystem = sdl_context.video().unwrap();
+        let window = video_subsystem.window("Screen", 512, 256)
+            .position_centered()
+            .build()
+            .expect("could not initialize video subsystem");
+        let canvas = window.into_canvas().build()
+            .expect("could not make a canvas");
+        let event_pump = sdl_context.event_pump().unwrap();
+        CanvasManager {
+            event_pump,
+            canvas
+        }
+    }
+
+    fn drawing_rectangle(&mut self, x: i32, y: i32, color: Color) {
+        self.canvas.clear();
+
+        self.canvas.set_draw_color(color);
+
+        let square_definition = Rect::new(x, y, 1, 1);
+        let _ = self.canvas.fill_rect(square_definition);
+
+        self.canvas.present();
+    }
+}
+
 pub struct Screen {
-    rams: [RAM4K; 2]
+    rams: [RAM4K; 2],
+    canvas: CanvasManager
 }
 
 impl Screen {
     pub fn new() -> Self {
-        Screen { rams: [RAM4K::new(); 2] }
+        Screen { 
+            rams: [RAM4K::new(); 2],
+            canvas: CanvasManager::new()
+        }
     }
 
     pub fn input(&mut self, clock: &Clock, input: Word, address: [bit; 13], load: bit) {
         let bits = DMux(load, address[0]);
         self.rams[0].input(clock, input, [address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12]], bits[0]);
         self.rams[1].input(clock, input, [address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12]], bits[1]);
+        // draw
+
         // let bits = [
         //     DMux(input[0], address[12]),
         //     DMux(input[1], address[12]),
@@ -340,7 +384,7 @@ impl Screen {
                                                                address[7], address[8], address[9], address[10], address[11], address[12]]);
         let output2 = self.rams[1].output(clock, [address[1], address[2], address[3], address[4], address[5], address[6], 
                                                                 address[7], address[8], address[9], address[10], address[11], address[12]]);
-        // Draw screen
+
         Word::new([
             Mux(output1[0], output2[0], address[0]),
             Mux(output1[1], output2[1], address[0]),
@@ -601,7 +645,6 @@ impl Keyboard {
     }
 }
 
-#[derive(Copy, Clone)]
 pub struct Memory {
     ram: RAM16K,
     screen: Screen,
@@ -651,7 +694,6 @@ impl Memory {
     }
 }
 
-#[derive(Copy, Clone)]
 pub struct Computer {
     rom: ROM32K,
     cpu: CPU,

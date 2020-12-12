@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 num-traits = "0.2.14"
+sdl2 = "0.34.3"

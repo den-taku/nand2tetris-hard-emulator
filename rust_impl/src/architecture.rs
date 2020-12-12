@@ -694,7 +694,7 @@ impl Memory {
             [address[2], address[3], address[4], address[5], address[6], address[7],
                      address[8], address[9], address[10], address[11], address[12], address[13], address[14]], 
                     And(And(address[0], Not(address[1])), load));
-        // keyboard ---> keyboard
+        // self.keyboard.input(clock);
     }
 
     pub fn output(&self, clock: &Clock, address: [bit; 15]) -> Word {

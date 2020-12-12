@@ -298,8 +298,11 @@ impl CanvasManager {
             .position_centered()
             .build()
             .expect("could not initialize video subsystem");
-        let canvas = window.into_canvas().build()
+        let mut canvas = window.into_canvas().build()
             .expect("could not make a canvas");
+        canvas.set_draw_color(Color::RGB(255, 255, 255));
+        canvas.clear();
+        canvas.present();
         let event_pump = sdl_context.event_pump().unwrap();
         CanvasManager {
             event_pump,
@@ -332,11 +335,33 @@ impl Screen {
         }
     }
 
+    pub fn event_pump(&mut self) -> &mut EventPump {
+        &mut self.canvas.event_pump
+    }
+
     pub fn input(&mut self, clock: &Clock, input: Word, address: [bit; 13], load: bit) {
         let bits = DMux(load, address[0]);
         self.rams[0].input(clock, input, [address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12]], bits[0]);
         self.rams[1].input(clock, input, [address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12]], bits[1]);
         // draw
+        let load_is_valid = false;
+        let mut colors = Vec::new();
+        for i in 0..16 {
+            colors.push(
+                match input[i] {
+                    O => Color::RGB(0, 0, 0),
+                    I => Color::RGB(255, 255, 255) 
+                }
+            )
+        }
+        // from address
+        let x = 0;
+        let y = 0;
+        if load_is_valid {
+            for i in 0..16 {
+                self.canvas.drawing_rectangle(x, y, colors[i]);
+            }
+        }
 
         // let bits = [
         //     DMux(input[0], address[12]),
@@ -731,7 +756,15 @@ impl Computer {
     }
     fn compute(&mut self) {
         self.execute(1); 
-        loop {
+        'running: loop {
+            for event in self.memory.screen.event_pump().poll_iter() {
+                match event {
+                    Event::Quit{..} => {
+                        break 'running
+                    },
+                    _ => {}
+                }
+            }
             self.execute(0);
         }
         // let mut clock = Clock::new();

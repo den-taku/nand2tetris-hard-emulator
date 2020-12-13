@@ -310,6 +310,25 @@ impl CanvasManager {
         }
     }
 
+    fn reload_screen(&mut self) {
+        // drop(self.event_pump);
+        // drop(self.canvas);
+        let sdl_context = sdl2::init().unwrap();
+        let video_subsystem = sdl_context.video().unwrap();
+        let window = video_subsystem.window("Screen", 512, 256)
+            .position_centered()
+            .build()
+            .expect("could not initialize video subsystem");
+        let mut canvas = window.into_canvas().build()
+            .expect("could not make a canvas");
+        canvas.set_draw_color(Color::RGB(255, 255, 255));
+        canvas.clear();
+        canvas.present();
+        let event_pump = sdl_context.event_pump().unwrap();
+        self.event_pump = event_pump;
+        self.canvas = canvas;
+    }
+
     fn drawing_rectangle(&mut self, x: i32, y: i32, color: Color) {
         self.canvas.clear();
 
@@ -344,7 +363,7 @@ impl Screen {
         self.rams[0].input(clock, input, [address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12]], bits[0]);
         self.rams[1].input(clock, input, [address[1], address[2], address[3], address[4], address[5], address[6], address[7], address[8], address[9], address[10], address[11], address[12]], bits[1]);
         // draw
-        let load_is_valid = false;
+        let load_is_valid = load == I;
         let mut colors = Vec::new();
         for i in 0..16 {
             colors.push(
@@ -355,11 +374,19 @@ impl Screen {
             )
         }
         // from address
-        let x = 0;
-        let y = 0;
+        let mut screen_address = 0usize;
+        for i in 0..13 {
+            screen_address += 2usize.pow((12 - i) as u32) * address[i] as usize;
+        }
+        let mut x_vec = Vec::new();
+        let mut y_vec = Vec::new();
+        for i in 0..16 {
+            x_vec.push(((screen_address + i) % 512) as i32);
+            y_vec.push(((screen_address + i) / 256) as i32);
+        }
         if load_is_valid {
             for i in 0..16 {
-                self.canvas.drawing_rectangle(x, y, colors[i]);
+                self.canvas.drawing_rectangle(x_vec[i], y_vec[i], colors[i]);
             }
         }
 
@@ -739,6 +766,7 @@ impl Computer {
     }
     pub fn run(&mut self) {
         self.load_program();
+        self.memory.screen.canvas.reload_screen();
         // self.execute(1);
         self.compute();
     }
@@ -756,6 +784,7 @@ impl Computer {
     }
     fn compute(&mut self) {
         self.execute(1); 
+        let mut i = 0;
         'running: loop {
             for event in self.memory.screen.event_pump().poll_iter() {
                 match event {
@@ -766,6 +795,10 @@ impl Computer {
                 }
             }
             self.execute(0);
+            i += 1;
+            if i > 32 {
+                break 'running;
+            }
         }
         // let mut clock = Clock::new();
         // println!("Answer is");

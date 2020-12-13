@@ -15,6 +15,7 @@ use sequential::ClockState::{Tick, Tock};
 fn main() {
     let mut computer = Computer::new();
     computer.run();
+    computer.run();
 
     // let mut pc = PC::new();
     // let mut clock = Clock::new();

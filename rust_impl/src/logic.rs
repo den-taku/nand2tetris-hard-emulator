@@ -4,7 +4,7 @@ use crate::bit::{O, I};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::ops::{Index, IndexMut};
-use std::convert::From;
+use std::convert::{From, Into};
 
 use num_traits::{PrimInt, FromPrimitive};
 // O -> 0, I -> 1
@@ -38,6 +38,15 @@ where
         }
     }
 }
+
+// impl<T> Into<T> for bit
+// where
+//     T: PrimInt + FromPrimitive
+// {
+//     fn into(self) -> T {
+//         unimplemented!()
+//     }
+// }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Word ([bit; 16]);

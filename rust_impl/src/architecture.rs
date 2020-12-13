@@ -6,9 +6,11 @@ use crate::logic::bit::{I, O};
 use crate::arithmetic::{ALU, Add16};
 use crate::sequential::ClockState::{Tick, Tock};
 use crate::sequential::{Clock, RAM4K, RAM16K, Register, PC};
+use sdl2::Sdl;
 use sdl2::pixels::Color;
 use sdl2::EventPump;
 use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
 use sdl2::render::WindowCanvas;
 use sdl2::rect::Rect;
 
@@ -286,6 +288,7 @@ impl ROM32K {
 }
 
 struct CanvasManager {
+    sdl_context: Sdl,
     event_pump: EventPump,
     canvas: WindowCanvas
 }
@@ -305,6 +308,7 @@ impl CanvasManager {
         canvas.present();
         let event_pump = sdl_context.event_pump().unwrap();
         CanvasManager {
+            sdl_context,
             event_pump,
             canvas
         }
@@ -313,8 +317,7 @@ impl CanvasManager {
     fn reload_screen(&mut self) {
         // drop(self.event_pump);
         // drop(self.canvas);
-        let sdl_context = sdl2::init().unwrap();
-        let video_subsystem = sdl_context.video().unwrap();
+        let video_subsystem = self.sdl_context.video().unwrap();
         let window = video_subsystem.window("Screen", 512, 256)
             .position_centered()
             .build()
@@ -324,8 +327,8 @@ impl CanvasManager {
         canvas.set_draw_color(Color::RGB(255, 255, 255));
         canvas.clear();
         canvas.present();
-        let event_pump = sdl_context.event_pump().unwrap();
-        self.event_pump = event_pump;
+        // let event_pump = self.sdl_context.event_pump().unwrap();
+        // self.event_pump = event_pump;
         self.canvas = canvas;
     }
 
@@ -788,7 +791,8 @@ impl Computer {
         'running: loop {
             for event in self.memory.screen.event_pump().poll_iter() {
                 match event {
-                    Event::Quit{..} => {
+                    Event::Quit{..} |
+                    Event::KeyDown { keycode: Some(Keycode::Escape), ..}=> {
                         break 'running
                     },
                     _ => {}
